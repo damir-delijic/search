@@ -1,9 +1,10 @@
 
 module.exports = class AdaptiveRadixTree{
 
-    constructor(pl){
+    constructor(pl, dtwl){
         this.root = new Node();
         this.pl = pl;
+        this.dtwl = dtwl || 0.75;
         this.constructTree();
     }
 
@@ -22,7 +23,7 @@ module.exports = class AdaptiveRadixTree{
     }
 
     print(){
-        this.root.print("-");
+        this.root.print('-');
     }
 
     artNodeSearch(word){
@@ -50,7 +51,7 @@ module.exports = class AdaptiveRadixTree{
             suggestions = node.suggest(word, suggestLimit, this.pl);
         }else{
             if(this.isWord(word)){
-                if(distance / word.length >= 0.75){
+                if(distance / word.length >= this.dtwl){
                     suggestions = node.suggest(word, suggestLimit, this.pl)
                 }else{
                     // ovdje moze biti da se radi autocomplete od prve registrovane rijeci
@@ -123,7 +124,7 @@ class Node{
 
     print(indent){
         for(let child in this.children){
-            this.children[child].print(indent + "-");
+            this.children[child].print(indent + '-');
         }
     }
 

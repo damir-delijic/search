@@ -1,5 +1,6 @@
 
 module.exports = class Search{
+    
     constructor(pl, sc, art){
         this.pl = pl;
         this.sc = sc;
@@ -7,7 +8,7 @@ module.exports = class Search{
     }
 
     search(word){
-        // preprocesiranje treba da se doradi nad word, razdvoji na tokene itd
+        // preprocesiranje treba da se doradi nad word, razdvoji na tokene itd, razlicita relevantnost termina koji su true, autocorect, spell correct
         if(word.length < 3) return [];
 
         let suggestionLimit = 5;
@@ -68,7 +69,7 @@ module.exports = class Search{
 
             for(j = 0; j < this.pl.dict[term].docs.length; j++){
                 result.push({
-                    title: this.pl.dict[term].docs[j].trueTitle,
+                    title: this.pl.dict[term].docs[j].title,
                     hit: term
                 });
             }

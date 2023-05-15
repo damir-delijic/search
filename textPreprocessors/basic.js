@@ -1,23 +1,29 @@
-class Preprocessor{
+module.exports = class Preprocessor{
     
-    // konfiguracioni fajl za stopword, minimaltokenlen i charmap
-
-    constructor(minimalTokenLen, stopwords, charMap){
+    constructor(minTokenLen, stopwords, charMap){
         this.stopwords = stopwords;
-        this.minimalTokenLen = minimalTokenLen;
+        this.minTokenLen = minTokenLen;
         this.charMap = charMap;
     }
 
     process(segment){
         let result = [];
         let tokens = this.tokenize(segment);
+        let j, isStopword;
         for(let i = 0; i < tokens.length; i++){
             tokens[i] = this.capitalize(tokens[i]);
             tokens[i] = this.depunct(tokens[i]);
             tokens[i] = this.replaceChars(tokens[i]);
             tokens[i] = this.stem(tokens[i]);
-            if(tokens[i].length >= this.minimalTokenLen){
-                result.push(tokens[i]);
+            if(tokens[i].length >= this.minTokenLen){
+                isStopword = false;
+                for(j = 0; j < this.stopwords.length; j++){
+                    if(tokens[i] == this.stopwords[j]){
+                        isStopword = true;
+                        break;
+                    }
+                }
+                if(!isStopword) result.push(tokens[i]);
             }
         }
         return result;
@@ -55,13 +61,3 @@ class Preprocessor{
     }
 
 }
-
-var pp = new Preprocessor(2, [], {'ć':'c', 'ž':'z'});
-
-
-let segment = 'Kuća porodice Džulijus: Misterija Aurore Tigarden';
-
-let res = pp.process(segment);
-
-console.log(segment);
-console.log(res);
