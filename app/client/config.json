@@ -1,0 +1,24 @@
+{
+    "data":{
+        "collections":{
+            "movies":{
+                "schema": {
+                    "title":{
+                        "delimiters": [],
+                        "charmap": {
+                            "ć": "c",
+                            "č": "c",
+                            "ž": "z",
+                            "đ": "d",
+                            "š": "s"
+                        },
+                        "stopwords":[]
+                    }
+                },
+                "db":{},
+                "alphabet": "abcdefghijklmnopqrstuvwxyz"
+            }
+        }
+    },
+    "minQueryLen": "3"
+}

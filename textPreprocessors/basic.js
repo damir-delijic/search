@@ -14,7 +14,6 @@ module.exports = class Preprocessor{
             tokens[i] = this.capitalize(tokens[i]);
             tokens[i] = this.depunct(tokens[i]);
             tokens[i] = this.replaceChars(tokens[i]);
-            tokens[i] = this.stem(tokens[i]);
             if(tokens[i].length >= this.minTokenLen){
                 isStopword = false;
                 for(j = 0; j < this.stopwords.length; j++){
@@ -53,11 +52,6 @@ module.exports = class Preprocessor{
             }
         }
         return result;
-    }
-
-    stem(token){
-        // TODO stemmer
-        return token;
     }
 
 }

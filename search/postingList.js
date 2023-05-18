@@ -1,7 +1,6 @@
 
 module.exports = class PostingList{
 
-    // put do json fajla
     constructor(datapath, preprocessor, fieldNames, readPersisted, persistedPath){
         this.datapath = datapath;
         this.preprocessor = preprocessor;
@@ -11,15 +10,11 @@ module.exports = class PostingList{
         if(readPersisted){
             this.readPostingList();
         }else{
-            this.initialize();
+            this.constructPostingList();
         }
     }
 
     constructPostingList(){
-        
-    }
-
-    initialize(){
         let fs = require('fs');
         let data = JSON.parse(fs.readFileSync(this.datapath, 'utf8'));
 
@@ -110,6 +105,10 @@ module.exports = class PostingList{
 
     deleteTerm(term){
         delete this.dict[term];
+    }
+
+    update(){
+        
     }
 
     savePostingList(){

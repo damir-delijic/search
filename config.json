@@ -19,5 +19,7 @@
     "art": {
         "distanceToWordLengthRatioThreshold": 0.75
     },
-    "alphabet": "abcdefghijklmnopqrstuvwxyz"
+    "alphabet": "abcdefghijklmnopqrstuvwxyz",
+    "scoreBoostingFields": "",
+    "minQueryLen": "3"
 }
