@@ -1,8 +1,7 @@
-const DatabaseIntegrator = require('../integrators/databaseIntegrator');
-const Preprocessor = require('../preprocessors/basic')
-const Spelling = require('../other/spelling');
-const Posting = require('../structures/posting');
-const AdaptiveRadixTree = require('../structures/art');
+const Collection = require('./collection');
+const Preprocessor = require('./preprocessor')
+const SpellC = require('./spellC');
+
 
 module.exports = class Manager{
 
@@ -10,9 +9,7 @@ module.exports = class Manager{
         this.collections = {};
         this.config = config;
         this.pp = new Preprocessor(config.textprocessing);
-        this.sc = new Spelling(config.alphabet);
-        this.pl = new Posting();
-        this.art = new AdaptiveRadixTree(this.pl.dict);
+        this.sc = new SpellC(config.alphabet);
     }
 
     build(){
@@ -21,7 +18,7 @@ module.exports = class Manager{
         for(let col in this.config.data.collections){
             name = col;
             config = this.config.data.collections[name];
-            collection = new DatabaseIntegrator(name, config, this.pp, this.pl, this.art);
+            collection = new Collection(name, config, this.pp);
             collection.build();
             this.collections[name] = collection;
         }

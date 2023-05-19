@@ -2,8 +2,8 @@ let pathtoconfig = './config.json';
 let fs = require('fs');
 const config = JSON.parse(fs.readFileSync(pathtoconfig, 'utf8'));
 
-const DefaultCollectionManager = require('../managers/default');
-var cManager = new DefaultCollectionManager(config);
+const Manager = require('./manager');
+var cManager = new Manager(config);
 cManager.build();
 
 
