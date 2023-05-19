@@ -1,9 +1,9 @@
 
 module.exports = class AdaptiveRadixTree{
 
-    constructor(pl){
+    constructor(dictionary){
         this.root = new Node();
-        this.pl = pl;
+        this.dictionary = dictionary;
     }
 
     insert(word){
@@ -18,62 +18,39 @@ module.exports = class AdaptiveRadixTree{
         this.root.print('-');
     }
 
-    artNodeSearch(word){
-        let pair = this.root.search(word);
-        return pair;
-    }
-
     isWord(word){
-        if(this.pl.dict[word]) return true;
+        if(this.dictionary[word]) return true;
         else return false;
     }
 
-    sortSuggestions(suggestions){
-        let result = [];
-        let i,j, maxIndex;
-        let suggestionsLength = suggestions.length;
-
-        for(i = 0; i < suggestionsLength - 1; i++){
-            maxIndex = 0;
-            for(j = 1; j < suggestions.length; j++){
-                if(suggestions[maxIndex] < suggestions[j]){
-                    maxIndex = j;
-                }
-            }
-            result.push(suggestions[maxIndex]);
-            suggestions.splice(maxIndex, 1);
-        }
-
-        return result;
-    }
-
-    search(word, suggestLimit){
+    search(word){
         let pair =  this.root.search(word);
         let node = pair[0];
         let distance = word.length - pair[1];
 
-        let firstWord = [];
-        let suggestions = [];
+        let results = {
+            isExactWord: false,
+            prediction: '',
+            suggestions: []
+        }
+
+
+        let subWord = word.substring(0, distance);
 
         if(distance == word.length){
             if(this.isWord(word)){
-                firstWord = [word];
+                results.isExactWord = true;
+                results.prediction = word;
             }
-            suggestions = node.suggest(word, suggestLimit, this.pl);
+            results.suggestions = node.suggest(word, this);
         }else{
-            if(this.isWord(word)){
-                if(distance / word.length >= 0.75){
-                    suggestions = node.suggest(word, suggestLimit, this.pl)
-                }else{
-                    // ovdje moze biti da se radi autocomplete od prve registrovane rijeci
-                    suggestions = [];
-                }
-            }else{
-                suggestions = [];
+            if(this.isWord(subWord) && distance / word.length >= 0.75){
+                results.prediction = subWord;
+                results.suggestions = node.suggest(subWord, this)
             }
         }
 
-        return [...firstWord, ...suggestions];
+        return results;
     }
 
 }
@@ -147,9 +124,9 @@ class Node{
 
     // predlozi, bfs modifikovani
 
-    suggest(word, limit, pl){
+    suggest(word, art){
         
-        let isPossibilitiesListNotExhausted = true;
+        let possibilitiesListNotExhausted = true;
 
         let result = [];
         
@@ -160,20 +137,20 @@ class Node{
             nextLevelQueue.push([child, this.children[child]]);
         }
 
-        while(result.length < limit && isPossibilitiesListNotExhausted){
+        while(possibilitiesListNotExhausted){
 
             while(nextLevelQueue.length > 0){
                 let pair = nextLevelQueue.shift();
                 currentLevelQueue.push(pair)
             }
 
-            while(currentLevelQueue.length > 0 && result.length < limit){
+            while(currentLevelQueue.length > 0){
                 let pair = currentLevelQueue.shift();
                 
                 let substr = pair[0];
                 let node = pair[1];
 
-                if(pl.dict[word+substr]){ // ako postoji u posting list
+                if(art.dictionary[word+substr]){ // ako postoji u rjecniku
                     result.push(word + substr);
                 }
 
@@ -184,7 +161,7 @@ class Node{
             }
 
             if(nextLevelQueue.length == 0){
-                isPossibilitiesListNotExhausted = false;
+                possibilitiesListNotExhausted = false;
             }
 
         }
@@ -197,7 +174,7 @@ class Node{
 
     search(substr){
         if(substr.length == 0){
-            return [this, 0];
+            return [this, substr.length];
         }else{
             let key = substr[0];
 

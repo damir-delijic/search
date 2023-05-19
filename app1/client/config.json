@@ -2,23 +2,39 @@
     "data":{
         "collections":{
             "movies":{
-                "schema": {
-                    "title":{
-                        "delimiters": [],
-                        "charmap": {
-                            "ć": "c",
-                            "č": "c",
-                            "ž": "z",
-                            "đ": "d",
-                            "š": "s"
-                        },
-                        "stopwords":[]
-                    }
-                },
-                "db":{},
-                "alphabet": "abcdefghijklmnopqrstuvwxyz"
+                "db":{
+                    "schema": [
+                        {"title": "string"},
+                        {"actor": "string[]"}
+                    ],
+                    "connection": "",
+                    "other": ""
+                }
+            },
+            "tvshows":{
+                "db": {
+                    "schema": [
+                        {"title": "string"},
+                        {"director": "string"}
+                    ],
+                    "connection": "",
+                    "other": ""
+                }
             }
         }
     },
-    "minQueryLen": "3"
+    "alphabet": "abcdefghijklmnopqrstuvwxyz",
+    "minLenForSpellCorrect": 3,
+    "textprocessing":{
+        "charMap": {
+            "ć": "c",
+            "č": "c",
+            "š": "s",
+            "ž": "z",
+            "đ": "d"
+        },
+        "minLenToken": 2,
+        "stopwords": ["pticurina"]
+    }
+    
 }

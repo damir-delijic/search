@@ -1,35 +1,14 @@
-module.exports = class SpellCorrector{
+module.exports = class Spelling{
 
     // http://norvig.com/spell-correct.html
 
-    constructor(pl, letters){
-        this.pl = pl;
+    constructor(letters){
         this.letters = letters; // zavisi od jezika
     }
 
-    singleCorrection(word){
-        return this.known(this.edits1(word));
-    }
-
-    isKnown(word){
-        if(this.pl.dict[word]) return true;
-        else return false;
-    }
-
-    doubleCorrection(word){
-        let single = this.edits1(word);
-        return [...new Set([...this.known(this.edits2(single)) , ...this.known(single)])]
-    }
-
-    known(words){
-        let result = [];
-        for(let i = 0; i < words.length; i++){
-            let word = words[i];
-            if(this.isKnown(word)){
-                result.push(word);
-            }
-        }
-        return result;
+    damLevDistance2(word){
+        let edits1 = this.edits1(word);
+        return this.edits2(edits1);
     }
 
     edits1(word){
@@ -80,9 +59,8 @@ module.exports = class SpellCorrector{
 
             result = result.concat(edits2);
         }
-
-        // ne mora set
-        return [...new Set(result)];
+        
+        return [...new Set([...result, ...cachedEdits1])];
     }
 
 }

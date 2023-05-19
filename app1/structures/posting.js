@@ -1,69 +1,50 @@
-
-module.exports = class PostingList{
+module.exports = class Posting{
 
     constructor(){
         this.dict = {};
     }
 
-    insert(term, field, documentId, position){
-        let termData = this.dict[term];
-        let isKnown = termData;
+    contains(word){
+        if(this.dict[word]) return true;
+        else return false
+    }
 
-        if(isKnown){
-            termData.fr++;
+    insert(term, source, id, field, position){
 
-            let fieldData = termData[field];
-            let hasFieldEntry = fieldData;
+        let doc = {
+            s: source,
+            i: id,
+            f: field,
+            p: position
+        }
 
-            if(hasFieldEntry){
-                let docs = fieldData.docs;
-                let doc, i;
-                let notFound = true;
-                for(i = 0; i < docs.length; i++){
-                    doc = docs[i];
-                    if(doc.id == documentId){
-                        notFound = false;
-                        doc.positions.push(position);
-                        break;
-                    }
-                }
-
-                if(notFound){
-                    doc = {
-                        id: documentId,
-                        positions: [position]
-                    };
-                    docs.push(doc);
-                }
-
-
-            }else{
-                termData[field] = {
-                    docs: [
-                        {
-                            id: documentId,
-                            positions: [position]
-                        }
-                    ]
-                };
-
-            }
-
+        if(this.contains(term)){
+            this.dict[term].fr += 1;
+            this.dict[term].dl.push(doc);
         }else{
+            this.dict[term] = {
+                fr: 1,
+                dl: [doc]
+            }
+        }
+    }
 
-            let obj = {};
+    delete(id){
+        let term, doc, i;
+        
+        for(term in this.dict){
+            for(i = 0; i < this.dict[term].dl.length; i++){
 
-            obj['fr'] = 1;
-            obj[field] = {
-                docs:  [
-                    {
-                        id: documentId,
-                        positions: [position]
-                    }
-                ]
-            };
-
-            this.dict[term] = obj;
+                doc = this.dict[term].dl[i];
+                if(doc.i == id){
+                    this.dict[term].dl.splice(i, 1);
+                    this.dict[term].fr -= 1;
+                    i -= 1;
+                }
+            }
+            if(this.dict[term].fr == 0){
+                delete this.dict[term];
+            }
         }
     }
 
