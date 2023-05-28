@@ -1,0 +1,8 @@
+maksimalana duzina querya 60 karakter npr
+moze da optereti, ako ukuca 30 slova sa po 30 razmaka zbog trie-a i spell-correcta
+slati spell correctu cijele recenice?
+imati jedan posting list?
+
+kako tacno rqaditi sa queryem od vise rijeci, u smislu trie-a
+
+kolekcija jedna klasa, u argumentima joj se predaju funkcije za getovanje podataka

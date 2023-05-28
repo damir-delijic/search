@@ -3,29 +3,6 @@ module.exports = class Preprocessor{
     constructor(){
     }
 
-    process(segment, tokenLenIsIrrelevant){
-        let result = [];
-        let tokens = this.tokenize(segment);
-        let j, isNotStopword, tokenLenIsAcceptable;
-        for(let i = 0; i < tokens.length; i++){
-            tokens[i] = this.capitalize(tokens[i]);
-            tokens[i] = this.depunct(tokens[i]);
-            tokens[i] = this.replaceChars(tokens[i]);
-            tokenLenIsAcceptable = tokens[i].length >= this.minLenToken;
-            if(tokenLenIsAcceptable || tokenLenIsIrrelevant ){
-                isNotStopword = true;
-                for(j = 0; j < this.stopwords.length; j++){
-                    if(tokens[i] == this.stopwords[j]){
-                        isNotStopword = false;
-                        break;
-                    }
-                }
-                if(isNotStopword) result.push(tokens[i]);
-            }
-        }
-        return result;
-    }
-
     tokenizeMulti(segment, separators){
         let separator, i, segmentCopy;
 
@@ -44,12 +21,16 @@ module.exports = class Preprocessor{
         return segment.split(separator);
     }
 
-    deCapitalize(token){
+    decapitalize(token){
         return token.toLowerCase();
     }
 
     capitalize(token){
         return token.toUpperCase();
+    }
+
+    basicDepunctuation(token){
+        return token.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,'');
     }
 
     depunctuate(token, artifacts){

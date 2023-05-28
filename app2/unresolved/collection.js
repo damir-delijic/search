@@ -1,56 +1,121 @@
-const Posting = require('./xreverseIndex');
-const Trie = require('./xtrie');
-
 module.exports = class Collection{
 
-    constructor(name, config, preprocessor){
-        this.name = name;
-        this.config = config;
-        this.pp = preprocessor;
-        this.pl = new Posting();
-        this.art = new Trie(this.pl.dict);
+    /*
+        Komunicira sa bazom, incijalno punjenje, i fetchovanje po id listi
+    */
+
+    constructor(args){
+        this.config = args.config;
+        this.defaultConfigNLP = args.defaultConfigNLP;
+
+        this.name = args.name;
+        this.preprocessor = args.preprocessor;
+        this.reverseIndex = args.reverseIndex;
+        this.trie = args.trie;
+        this.data = [];
     }
 
-    build(){
-        let data = [];
-        // load data from source
-        
-        // insert documents into data structures
-        
-        let document;
+    fetchAll(){
+        // ovdje se vrsi uzimanje podataa iz baze, stavljanje u odredjeni format, sipanje u data, uzima samo 
+        // polja koja su od interesa i trebaju biti indeksirana
+    }
 
-        for(let di = 0; di < data.length; di++){
-            document = data[di];
+    fetch(list){
+        
+    }
+
+    processData(){
+        let document;
+        while(this.data.length > 0){
+            document = this.data[0];
             this.processDocument(document);
+            this.data.shift();
         }
         
     }
 
     processDocument(document){
-        for(let field in document){
-            this.processField(document, field)
+        for(let fieldName in document){
+            this.processField(document, fieldName)
         }
     }
 
-    processField(document, field){
-        let fContent = document[field];
-        let term, terms;
+    nlp(fieldContent, fieldName){
+        let text = fieldContent;
+
+        let defaultConfigNLP = this.defaultConfigNLP;
+        let fieldSpecificSeparators = this.config.fields[fieldName] ? this.config.fields[fieldName].separators : false;
+        let config = {
+            separators: fieldSpecificSeparators || defaultConfigNLP.separators || [],
+            punctuation: defaultConfigNLP.punctuation || false,
+            charmap: defaultConfigNLP.charMap,
+            stopwords: defaultConfigNLP.stopwords || [],
+            minTokenLen: defaultConfigNLP.minTokenLen || 2
+        }
+
+        let separators = config.separators;
+        let punctuation = config.punctuation;
+        let charmap = config.charmap;
+        let minTokenLen = config.minTokenLen;
+        let stopwords = config.stopwords;
+        let result = [];
         
-        terms = this.pp.process(fContent);
-        for(let ti = 0; i < terms.length; ti++){
-            term = terms[ti];
-            this.pl.insert(term, this.name, document.id, field, ti);
-            this.art.insert(term);
+        let tokens;
+        tokens = this.preprocessor.tokenizeMulti(text, separators);
+        
+        let i, j, isNotStopword, tokenIsLongEnough, stopword, token;
+
+        for(i = 0; i < tokens.length; i++){
+            tokens[i] = this.preprocessor.decapitalize(tokens[i]);
+            if(punctuation){
+                tokens[i] = this.preprocessor.depunctuate(tokens[i], punctuation)
+            }else{
+                tokens[i] = this.preprocessor.basicDepunctuation(tokens[i]);
+            }
+
+            if(charmap){
+                tokens[i] = this.preprocessor.reMapCharacters(tokens[i], charmap);
+            }
+
+            tokenIsLongEnough = tokens[i].length >= minTokenLen;
+            
+            if(tokenIsLongEnough){
+                token = tokens[i];
+                isNotStopword = true;
+                for(j = 0; j < stopwords.length; j++){
+                    stopword = stopwords[j];
+                    if(token == stopword){
+                        isNotStopword = false;
+                        break;
+                    }
+                }
+                if(isNotStopword) result.push(token);
+
+            }
+
+
+        }
+
+        return result;
+
+    }
+
+    processField(document, fieldName){
+        let fieldContent = document[fieldName];
+        let word, words, position;
+    
+        words = this.nlp(fieldContent, fieldName);
+        
+        for(position = 0; position < words.length; position++){
+            word = words[position];
+            this.reverseIndex.insert(word, this.name, document.id, position)
+            this.trie.insert(word);
         }
 
     }
 
     insert(document){
         this.processDocument(document);
-    }
-
-    remove(id){
-        this.pl.delete(id);
     }
 
 }
