@@ -1,0 +1,40 @@
+{
+    "data":{
+        "collections":{
+            "movies":{
+                "db":{
+                    "schema": [
+                        {"title": "string"},
+                        {"actor": "string[]"}
+                    ],
+                    "connection": "",
+                    "other": ""
+                }
+            },
+            "tvshows":{
+                "db": {
+                    "schema": [
+                        {"title": "string"},
+                        {"director": "string"}
+                    ],
+                    "connection": "",
+                    "other": ""
+                }
+            }
+        }
+    },
+    "alphabet": "abcdefghijklmnopqrstuvwxyz",
+    "minLenForSpellCorrect": 3,
+    "textprocessing":{
+        "charMap": {
+            "ć": "c",
+            "č": "c",
+            "š": "s",
+            "ž": "z",
+            "đ": "d"
+        },
+        "minLenToken": 2,
+        "stopwords": ["pticurina"]
+    }
+    
+}
