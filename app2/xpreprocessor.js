@@ -1,9 +1,6 @@
 module.exports = class Preprocessor{
     
-    constructor(config){
-        this.minLenToken = config.minLenToken;
-        this.charMap = config.charMap;
-        this.stopwords = config.stopwords;
+    constructor(){
     }
 
     process(segment, tokenLenIsIrrelevant){
@@ -29,25 +26,52 @@ module.exports = class Preprocessor{
         return result;
     }
 
-    tokenize(segment){
-        return segment.split(' ');
+    tokenizeMulti(segment, separators){
+        let separator, i, segmentCopy;
+
+        segmentCopy = segment;
+        
+        for(i = 0; i < separators.length; i++){
+            separator = separators[i];
+            segmentCopy = segmentCopy.replaceAll(separator, ' ');
+        }
+
+        return this.tokenizeSingle(segmentCopy, ' ');
+
     }
 
-    capitalize(token){
+    tokenizeSingle(segment, separator){
+        return segment.split(separator);
+    }
+
+    deCapitalize(token){
         return token.toLowerCase();
     }
 
-    depunct(token){
-        return token.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,'');
+    capitalize(token){
+        return token.toUpperCase();
     }
 
-    replaceChars(token){
+    depunctuate(token, artifacts){
+        let i, artifact, tokenCopy;
+
+        tokenCopy = token;
+
+        for(i = 0; i < artifacts.length; i++){
+            artifact = artifacts[i];
+            tokenCopy = tokenCopy.replaceAll(artifact, '');
+        }
+
+        return tokenCopy;
+    }
+
+    reMapCharacters(token, map){
         let result = '';
         let char;
         for(let i = 0; i < token.length; i++){
             char = token[i];
-            if(this.charMap[char]){ // ako karakter postoji u mapi, zamijeni mapiranim
-                result += this.charMap[char];
+            if(map[char]){ // ako karakter postoji u mapi, zamijeni mapiranim
+                result += map[char];
             }else{ // ako ne postoji samo nalijepi originalni
                 result += char;
             }

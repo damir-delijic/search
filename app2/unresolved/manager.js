@@ -1,5 +1,5 @@
 const Collection = require('./collection');
-const Preprocessor = require('./preprocessor')
+const Preprocessor = require('./xpreprocessor')
 const SpellC = require('./xdamLevDistance');
 
 
