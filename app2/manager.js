@@ -102,7 +102,7 @@ module.exports = class Manager{
                 }
             }
             if(entry.estimate){
-                entry.weight = ((this.reverseIndex.maxFrequency - this.reverseIndex.dictionary[entry.estimate].fr) / ( this.reverseIndex.maxFrequency)).toFixed(2); // ako ima nisku frekvenciju bice mu weight tezi
+                entry.weight = ((this.reverseIndex.maxFrequency - this.reverseIndex.dictionary[entry.estimate].fr + 0.1) / ( this.reverseIndex.maxFrequency + 0.1)).toFixed(2); // ako ima nisku frekvenciju bice mu weight tezi
             }
         }
     }
@@ -138,7 +138,7 @@ module.exports = class Manager{
 
                 if(entry.neighborhood.length > 0){
                     entry.estimate = entry.neighborhood[0];
-                    entry.weight = ((this.reverseIndex.maxFrequency - this.reverseIndex.dictionary[entry.estimate].fr) / ( this.reverseIndex.maxFrequency)).toFixed(2)
+                    entry.weight = ((this.reverseIndex.maxFrequency - this.reverseIndex.dictionary[entry.estimate].fr + 0.1) / ( this.reverseIndex.maxFrequency + 0.1)).toFixed(2)
                 }
             }
             
@@ -196,6 +196,7 @@ module.exports = class Manager{
                     if(doc.source == obj.s && doc.id == obj.i && doc.field == obj.f){
                         isNotFound = false;
                         doc.positions.push([obj.p, weight]);
+                        break; // moze break jer ga kacim na taj i ni na jedan drugi
                     }
                 }
 
@@ -214,15 +215,36 @@ module.exports = class Manager{
     }
 
     rank(documents){
+        /// grupisane su pojave po poljima
         let result = [];
 
-        let i, doc;
+        let i, doc, isNotFound, j, resdoc, score;
 
         for(i = 0; i < documents.length; i++){
             doc = documents[i];
+            isNotFound = true;
+            for(j = 0; j < result.length; j++){
+                resdoc = result[j];
+                if(resdoc.source == doc.source && resdoc.id == doc.id){
+                    isNotFound = false;
+                    // score = this.scorePositionsForField(doc.positions, doc.field); e ako znam, mozda bolje grupistau u group
+                    break;
+                }
+            }
+            if(isNotFound){
+                resdoc.push({
+                    source: doc.source,
+                    id: doc.id,
+                    score: this.scorePositionsForField(doc.positions, doc.field)
+                });
+            }
         }
 
         return result;
+
+    }
+
+    scorePositionsForField(positions, name){
 
     }
 

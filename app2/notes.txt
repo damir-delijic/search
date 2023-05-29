@@ -6,3 +6,5 @@ imati jedan posting list?
 kako tacno rqaditi sa queryem od vise rijeci, u smislu trie-a
 
 kolekcija jedna klasa, u argumentima joj se predaju funkcije za getovanje podataka
+
+tezina riejci moze biti nula povecati je samo za 0.1
