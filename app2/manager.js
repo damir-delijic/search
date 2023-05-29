@@ -85,7 +85,6 @@ module.exports = class Manager{
 
     autocomplete(entryVector){
         let entry, i, trieResult;
-        let averageFrequency = this.reverseIndex.globalFrequency / this.reverseIndex.numberOfTerms;
 
         for(i = 0; i < entryVector.length; i++){
             entry = entryVector[i];
@@ -103,14 +102,13 @@ module.exports = class Manager{
                 }
             }
             if(entry.estimate){
-                entry.weight = (averageFrequency / ( averageFrequency + this.reverseIndex.dictionary[entry.estimate].fr)); // ako ima nisku frekvenciju bice mu weight tezi
+                entry.weight = ((this.reverseIndex.maxFrequency - this.reverseIndex.dictionary[entry.estimate].fr) / ( this.reverseIndex.maxFrequency)).toFixed(2); // ako ima nisku frekvenciju bice mu weight tezi
             }
         }
     }
 
     correct(entryVector){
         let entry, i, damLevResult, candidate, j, entryHasNoEstimate, tokenIsLongEnough;
-        let averageFrequency = this.reverseIndex.globalFrequency / this.reverseIndex.numberOfTerms;
 
         for(i = 0; i < entryVector.length; i++){
             entry = entryVector[i];
@@ -140,7 +138,7 @@ module.exports = class Manager{
 
                 if(entry.neighborhood.length > 0){
                     entry.estimate = entry.neighborhood[0];
-                    entry.weight = (averageFrequency / ( averageFrequency + this.reverseIndex.dictionary[entry.estimate].fr))
+                    entry.weight = ((this.reverseIndex.maxFrequency - this.reverseIndex.dictionary[entry.estimate].fr) / ( this.reverseIndex.maxFrequency)).toFixed(2)
                 }
             }
             
@@ -184,11 +182,10 @@ module.exports = class Manager{
     group(hits){
         let result = [];
 
-        let hit, term, objs, obj, termWeight, i, isNotFound, doc, j;
- 
+        let hit, objs, obj, weight, i, isNotFound, doc, j;
+        
         for(hit in hits){
-            term = hit;
-            termWeight = hits[hit].weight;
+            weight = hits[hit].weight;
             objs = hits[hit].objs;
             
             for(i = 0; i < objs.length; i++){
@@ -198,7 +195,7 @@ module.exports = class Manager{
                     doc = result[j];
                     if(doc.source == obj.s && doc.id == obj.i && doc.field == obj.f){
                         isNotFound = false;
-                        doc.positions.push([obj.p, termWeight]);
+                        doc.positions.push([obj.p, weight]);
                     }
                 }
 
@@ -207,25 +204,30 @@ module.exports = class Manager{
                         source: obj.s,
                         id: obj.i,
                         field: obj.f,
-                        positions: [[obj.p, termWeight]]
+                        positions: [[obj.p, weight]]
                     });
                 }
             }
-        }
-        
-
-        for(i = 0; i < result.length; i++){
-            console.log(result[i]);
         }
 
         return result;
     }
 
     rank(documents){
+        let result = [];
+
+        let i, doc;
+
+        for(i = 0; i < documents.length; i++){
+            doc = documents[i];
+        }
+
+        return result;
 
     }
 
     search(query){
+        let start = Date.now();
         let total = {};
         let numTotal = 0;
 
@@ -279,14 +281,13 @@ module.exports = class Manager{
             }
         }
 
-        for(let hit in hits){
-            console.log('Hit: ', hit, 'Weight: ', hits[hit].weight);
-            console.log('Docs: ', hits[hit].objs);
-        }
-
         let documents = this.group(hits);
+        for(i = 0; i < documents.length; i++){
+            console.log(documents[i]);
+        }
         let ranked = this.rank(documents);
-
+        let end = Date.now();
+        console.log(end - start)
         return ranked;
 
     }

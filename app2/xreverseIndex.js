@@ -26,6 +26,7 @@ module.exports = class ReverseIndex{
         this.dictionary = {};
         this.globalFrequency = 0;
         this.numberOfTerms = 0;
+        this.maxFrequency = 1;
     }
 
     contains(word){
@@ -52,6 +53,9 @@ module.exports = class ReverseIndex{
 
         if(this.contains(word)){
             this.dictionary[word].fr += 1;
+            if(this.maxFrequency < this.dictionary[word].fr){
+                this.maxFrequency = this.dictionary[word].fr;
+            }
             this.dictionary[word].dl.push(doc);
         }else{
             this.dictionary[word] = {
