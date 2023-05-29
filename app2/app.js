@@ -8,15 +8,18 @@ cManager.build();
 
 
 cManager.search({
-    text: 'poQEFGr GWEGqwr fF,./Fć ptićurIn.a',
+    text: 'bruce willis',
     collections: [
         {
             name:'movies',
-            fields: ['title']
+            fields: ['title', 'actor']
         }
     ]
 
 });
+
+
+
 
 
 

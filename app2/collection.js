@@ -15,13 +15,31 @@ module.exports = class Collection{
         this.data = [];
     }
 
-    fetchAll(){
-        // ovdje se vrsi uzimanje podataa iz baze, stavljanje u odredjeni format, sipanje u data, uzima samo 
-        // polja koja su od interesa i trebaju biti indeksirana
+    build(){
+        // uzima podatke, stavlja u data
+        if(this.config.type == "json"){
+            let fs = require('fs');
+            let data = JSON.parse(fs.readFileSync(this.config.path, 'utf8'));
+            data = data.documents;
+            let document, field;
+
+            while(data.length > 0){
+                let obj = {};
+                document = data.shift();
+                for(field in this.config.fields){
+                    obj[field] = document[field];
+                }
+                this.data.push(obj);
+            }
+        }
+
+        this.processData();
     }
 
     fetch(list){
-        
+        if(this.config.type == "json"){
+            return list;
+        }
     }
 
     processData(){
@@ -31,7 +49,6 @@ module.exports = class Collection{
             this.processDocument(document);
             this.data.shift();
         }
-        
     }
 
     processDocument(document){
@@ -108,7 +125,7 @@ module.exports = class Collection{
         
         for(position = 0; position < words.length; position++){
             word = words[position];
-            this.reverseIndex.insert(word, this.name, document.id, position)
+            this.reverseIndex.insert(word, this.name, document.id, fieldName, position)
             this.trie.insert(word);
         }
 

@@ -24,11 +24,21 @@ module.exports = class ReverseIndex{
 
     constructor(){
         this.dictionary = {};
+        this.globalFrequency = 0;
+        this.numberOfTerms = 0;
     }
 
     contains(word){
         if(this.dictionary[word]) return true;
         else return false
+    }
+
+    print(){
+        for(let word in this.dictionary){
+            console.log("Word: ", word);
+            console.log("Frequency: ", this.dictionary[word].fr);
+            console.log("Documents: ", this.dictionary[word].dl);
+        }
     }
 
     insert(word, source, id, field, position){
@@ -49,10 +59,14 @@ module.exports = class ReverseIndex{
                 dl: [doc]
             }
         }
+        this.globalFrequency += 1;
+        this.numberOfTerms += 1;
     }
 
     deleteWord(word){
         if(this.contains(word)){
+            this.globalFrequency -= this.dictionary[word].fr;
+            this.numberOfTerms -= 1;
             delete this.dictionary[word];
         }
     }
@@ -67,6 +81,7 @@ module.exports = class ReverseIndex{
                 if(doc.s == source && doc.i == id){
                     this.dictionary[word].dl.splice(i, 1);
                     this.dictionary[word].fr -= 1;
+                    this.globalFrequency -= 1;
                     i -= 1;
                 }
             }

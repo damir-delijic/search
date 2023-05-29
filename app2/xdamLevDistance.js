@@ -6,9 +6,13 @@ module.exports = class DamLevDistance{
         this.letters = letters; // zavisi od jezika
     }
 
-    calculate(word){
+    calculateSingle(word){
         let edits1 = this.edits1(word);
         return this.edits2(edits1);
+    }
+
+    calculateDouble(word){
+        return this.edits1(word);
     }
 
     edits1(word){

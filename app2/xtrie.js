@@ -19,7 +19,13 @@ module.exports = class Trie{
         this.root.delete(word);
     }
 
-    suggest(node, word){
+    print(){
+        console.log("Trie start");
+        this.root.print("-");
+        console.log("Trie end")
+    }
+
+    bfs(node, word){
         
         let possibilitiesListNotExhausted = true;
 
@@ -65,34 +71,23 @@ module.exports = class Trie{
 
     }
 
-    search(word){
+    suggest(word){
         let pair =  this.root.search(word);
         let node = pair[0];
         let distance = word.length - pair[1];
 
-        let results = {
-            isExactWord: false,
-            prediction: '',
-            suggestions: []
-        }
-
-
         let subWord = word.substring(0, distance);
 
-        if(distance == word.length){
-            if(this.dictionary.contains(word)){
-                results.isExactWord = true;
-                results.prediction = word;
-            }
-            results.suggestions = this.suggest(node, subWord);
-        }else{
-            if(this.dictionary.contains(subWord) && distance / word.length >= 0.75){
-                results.prediction = subWord;
-                results.suggestions = this.suggest(node, subWord)
-            }
+        let result = {
+            estimate: subWord,
+            suggestions: []
+        };
+
+        if(distance == word.length || (this.dictionary.contains(subWord) && distance/word.length >= 0.75)){
+            result.suggestions = this.bfs(node, subWord);
         }
 
-        return results;
+        return result;
     }
 
 }
@@ -155,7 +150,9 @@ class Node{
     print(indent){
         for(let child in this.children){
             this.children[child].print(indent + '-');
+            console.log(indent + child);
         }
+       
     }
 
     // napraviti compressedNode? nema children samo value

@@ -2,8 +2,10 @@
     "data":{
         "collections":{
             "movies":{
-                "type": "db",
+                "type": "json",
+                "path": "./data/temp.json",
                 "fields":{
+                    "id":{},
                     "title":{
                         "separators": []
                     },
@@ -15,7 +17,8 @@
         }
     },
     "alphabet": "abcdefghijklmnopqrstuvwxyz",
-    "minLenForSpellCorrect": 3,
+    "minSingleEditTokenLen": 3,
+    "minDoubleEditTokenLen": 5,
     "nlp":{
         "charMap": {
             "ć": "c",
@@ -26,7 +29,7 @@
         },
         "minLenToken": 2,
         "stopwords": ["pticurina"],
-        "separators": [" "]
+        "separators": []
     }
     
 }
