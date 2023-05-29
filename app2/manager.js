@@ -92,19 +92,20 @@ module.exports = class Manager{
             trieResult = this.trie.suggest(entry.original);
             entry.neighborhood = trieResult.suggestions;
             
-            if(entry.isKnown){
-                entry.estimate = entry.original;
+            if(this.reverseIndex.contains(trieResult.estimate)){
+                entry.estimate = trieResult.estimate;
             }else{
-                if(this.reverseIndex.contains(trieResult.estimate)){
-                    entry.estimate = trieResult.estimate;
-                }else{
-                    entry.estimate = entry.neighborhood.length > 0 ? entry.neighborhood[0] : undefined;
-                }
+                entry.estimate = entry.neighborhood.length > 0 ? entry.neighborhood[0] : undefined;
             }
+
             if(entry.estimate){
-                entry.weight = ((this.reverseIndex.maxFrequency - this.reverseIndex.dictionary[entry.estimate].fr + 0.1) / ( this.reverseIndex.maxFrequency + 0.1)).toFixed(2); // ako ima nisku frekvenciju bice mu weight tezi
+                entry.weight = this.termWeightMeasure(entry.estimate);
             }
         }
+    }
+
+    termWeightMeasure(term){
+        return ((this.reverseIndex.maxFrequency - this.reverseIndex.dictionary[term].fr + 0.01) / ( this.reverseIndex.maxFrequency + 0.01)).toFixed(2); // sto je blizi maksimalnoj frekvenciji, manji mu je skor
     }
 
     correct(entryVector){
@@ -138,7 +139,7 @@ module.exports = class Manager{
 
                 if(entry.neighborhood.length > 0){
                     entry.estimate = entry.neighborhood[0];
-                    entry.weight = ((this.reverseIndex.maxFrequency - this.reverseIndex.dictionary[entry.estimate].fr + 0.1) / ( this.reverseIndex.maxFrequency + 0.1)).toFixed(2)
+                    entry.weight = this.termWeightMeasure(entry.estimate);
                 }
             }
             
@@ -184,6 +185,8 @@ module.exports = class Manager{
 
         let hit, objs, obj, weight, i, isNotFound, doc, j;
         
+        let tempObj;
+
         for(hit in hits){
             weight = hits[hit].weight;
             objs = hits[hit].objs;
@@ -193,20 +196,20 @@ module.exports = class Manager{
                 isNotFound = true;
                 for(j = 0; j < result.length; j++){
                     doc = result[j];
-                    if(doc.source == obj.s && doc.id == obj.i && doc.field == obj.f){
+                    if(doc.source == obj.s && doc.id == obj.i){
                         isNotFound = false;
-                        doc.positions.push([obj.p, weight]);
+                        doc['fields'][obj.f]['positions'].push([obj.p, weight]);
                         break; // moze break jer ga kacim na taj i ni na jedan drugi
                     }
                 }
 
                 if(isNotFound){
-                    result.push({
-                        source: obj.s,
-                        id: obj.i,
-                        field: obj.f,
-                        positions: [[obj.p, weight]]
-                    });
+                    tempObj = {};
+                    tempObj['source'] = obj.s;
+                    tempObj['id'] = obj.id;
+                    tempObj['fields'] = {};
+                    tempObj['fields'][obj.f]['positions'] = [[obj.p, weight]];
+                    result.push(tempObj);
                 }
             }
         }
@@ -214,37 +217,52 @@ module.exports = class Manager{
         return result;
     }
 
-    rank(documents){
-        /// grupisane su pojave po poljima
+    sort(documents){
         let result = [];
+        let document, i, resdoc;
 
-        let i, doc, isNotFound, j, resdoc, score;
-
-        for(i = 0; i < documents.length; i++){
-            doc = documents[i];
-            isNotFound = true;
-            for(j = 0; j < result.length; j++){
-                resdoc = result[j];
-                if(resdoc.source == doc.source && resdoc.id == doc.id){
-                    isNotFound = false;
-                    // score = this.scorePositionsForField(doc.positions, doc.field); e ako znam, mozda bolje grupistau u group
+        while(documents.length > 0){
+            document = documents.shift();
+            let score = this.rank(document);
+            for(i = 0; i < result.length; i++){ // i = insertion index
+                resdoc = result[i];
+                if(resdoc.score < score){
                     break;
                 }
             }
-            if(isNotFound){
-                resdoc.push({
-                    source: doc.source,
-                    id: doc.id,
-                    score: this.scorePositionsForField(doc.positions, doc.field)
-                });
-            }
+            result.splice(i-1, 0, {
+                source: document.source,
+                id: document.id,
+                score: score
+            });
         }
 
         return result;
 
     }
 
-    scorePositionsForField(positions, name){
+    rank(document){
+
+        let fields = document.fields;
+
+        for(let field in fields){
+            let score = this.scorePositions(fields[field].positions);
+            document['fields'][field] = score;
+        }
+
+        // let config = this.config.data.collections[source];
+        // let weight = config.fields[field].weight;
+
+        let score = 0;
+
+
+
+
+        // score = score * weight;
+        return score;
+    }
+
+    scorePositions(positions){
 
     }
 
@@ -296,7 +314,7 @@ module.exports = class Manager{
                 for(j = 0; j < entry.neighborhood.length; j++){
                     neighbor = entry.neighborhood[j];
                     hits[neighbor] = {
-                        weight: entry.weight * 0.7,
+                        weight: entry.weight * 0.5,
                         objs: this.filter(neighbor, query)
                     }
                 }
@@ -304,13 +322,10 @@ module.exports = class Manager{
         }
 
         let documents = this.group(hits);
-        for(i = 0; i < documents.length; i++){
-            console.log(documents[i]);
-        }
-        let ranked = this.rank(documents);
+        let sorted = this.sort(documents);
         let end = Date.now();
         console.log(end - start)
-        return ranked;
+        return sorted;
 
     }
 

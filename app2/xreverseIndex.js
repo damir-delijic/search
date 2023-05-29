@@ -1,37 +1,24 @@
 module.exports = class ReverseIndex{
 
-    /*
-        dictionary = {
-            "rijec": {
-                "fr": k, ----- k > 0 (frequency, ucestalost)
-                "dl":[  --------- (document list, lista pojavljivanja)
-                    {
-                        "s": "movies", ---- (source kolekcija)
-                        "i": "12", ----- (id dokumenta u toj kolekciji)
-                        "f": "title", ----- (polje u kom se pojavila rijec)
-                        "p": 1 ------- (pozicija u polju te rijeci)
-                    },
-                    {
-                        ...
-                    },
-                    .
-                    .
-                    .
-                ]
-            }
-        }
-    */
-
     constructor(){
         this.dictionary = {};
-        this.globalFrequency = 0;
-        this.numberOfTerms = 0;
-        this.maxFrequency = 1;
+        // ne prati brisanja, granici slucaj bi bio da se nabudzi jedan i da se izbrise, onda bi ostali bili nebitni
+        this.maxFrequency = 0;
+        this.maxFrequencyHolder = undefined;
     }
 
     contains(word){
         if(this.dictionary[word]) return true;
         else return false
+    }
+
+    refreshMaxFrequency(){
+        for(let word in this.dictionary){
+            if(this.dictionary[word].fr > this.maxFrequency){
+                this.maxFrequency = this.dictionary[word].fr;
+                this.maxFrequencyHolder = word;
+            }
+        }
     }
 
     print(){
@@ -53,9 +40,6 @@ module.exports = class ReverseIndex{
 
         if(this.contains(word)){
             this.dictionary[word].fr += 1;
-            if(this.maxFrequency < this.dictionary[word].fr){
-                this.maxFrequency = this.dictionary[word].fr;
-            }
             this.dictionary[word].dl.push(doc);
         }else{
             this.dictionary[word] = {
@@ -63,14 +47,19 @@ module.exports = class ReverseIndex{
                 dl: [doc]
             }
         }
-        this.globalFrequency += 1;
-        this.numberOfTerms += 1;
+
+        if(this.maxFrequency < this.dictionary[word].fr){
+            this.maxFrequency = this.dictionary[word].fr;
+            this.maxFrequencyHolder = word;
+        }
+
     }
 
     deleteWord(word){
         if(this.contains(word)){
-            this.globalFrequency -= this.dictionary[word].fr;
-            this.numberOfTerms -= 1;
+            if(word == this.maxFrequencyHolder){
+                this.refreshMaxFrequency();
+            }
             delete this.dictionary[word];
         }
     }
@@ -85,7 +74,6 @@ module.exports = class ReverseIndex{
                 if(doc.s == source && doc.i == id){
                     this.dictionary[word].dl.splice(i, 1);
                     this.dictionary[word].fr -= 1;
-                    this.globalFrequency -= 1;
                     i -= 1;
                 }
             }
@@ -96,4 +84,26 @@ module.exports = class ReverseIndex{
     }
 
 }
+
+/*
+        dictionary = {
+            "rijec": {
+                "fr": k, ----- k > 0 (frequency, ucestalost)
+                "dl":[  --------- (document list, lista pojavljivanja)
+                    {
+                        "s": "movies", ---- (source kolekcija)
+                        "i": "12", ----- (id dokumenta u toj kolekciji)
+                        "f": "title", ----- (polje u kom se pojavila rijec)
+                        "p": 1 ------- (pozicija u polju te rijeci)
+                    },
+                    {
+                        ...
+                    },
+                    .
+                    .
+                    .
+                ]
+            }
+        }
+    */
 
