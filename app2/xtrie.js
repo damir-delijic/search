@@ -20,9 +20,7 @@ module.exports = class Trie{
     }
 
     print(){
-        console.log("Trie start");
         this.root.print("-");
-        console.log("Trie end")
     }
 
     bfs(node, word, levelLimit){
@@ -76,7 +74,7 @@ module.exports = class Trie{
 
     }
 
-    suggest(word){
+    suggest(word, levelLimit){
         let pair =  this.root.search(word);
         let node = pair[0];
         let distance = word.length - pair[1];
@@ -84,12 +82,12 @@ module.exports = class Trie{
         let subWord = word.substring(0, distance);
 
         let result = {
-            estimate: subWord,
+            subWord: subWord,
             suggestions: []
         };
 
         if(distance == word.length || (this.dictionary.contains(subWord) && distance/word.length >= 0.75)){
-            result.suggestions = this.bfs(node, subWord);
+            result.suggestions = this.bfs(node, subWord, levelLimit);
         }
 
         return result;
@@ -165,8 +163,6 @@ class Node{
     compress(){
 
     }
-
-    // predlozi, bfs modifikovani
 
     // interna pretraga, vraca node i poziciju slova
 

@@ -3,14 +3,16 @@
         "collections":{
             "movies":{
                 "type": "json",
-                "path": "./data/temp.json",
+                "path": "./data/movies.json",
                 "fields":{
                     "id":{},
                     "title":{
-                        "separators": []
+                        "separators": [],
+                        "weight": 1
                     },
                     "actor": {
-                        "separators": []
+                        "separators": [],
+                        "weight": 1
                     }
                 }
             }

@@ -8,7 +8,7 @@ cManager.build();
 
 
 cManager.search({
-    text: 'bruce willis',
+    text: 'bruce willis glongisan',
     collections: [
         {
             name:'movies',

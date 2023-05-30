@@ -2,9 +2,6 @@ module.exports = class ReverseIndex{
 
     constructor(){
         this.dictionary = {};
-        // ne prati brisanja, granici slucaj bi bio da se nabudzi jedan i da se izbrise, onda bi ostali bili nebitni
-        this.maxFrequency = 0;
-        this.maxFrequencyHolder = undefined;
     }
 
     contains(word){
@@ -12,20 +9,27 @@ module.exports = class ReverseIndex{
         else return false
     }
 
-    refreshMaxFrequency(){
-        for(let word in this.dictionary){
-            if(this.dictionary[word].fr > this.maxFrequency){
-                this.maxFrequency = this.dictionary[word].fr;
-                this.maxFrequencyHolder = word;
-            }
-        }
-    }
-
     print(){
         for(let word in this.dictionary){
             console.log("Word: ", word);
             console.log("Frequency: ", this.dictionary[word].fr);
             console.log("Documents: ", this.dictionary[word].dl);
+        }
+    }
+
+    getTermFrequency(term){
+        if(this.contains(term)){
+            return this.dictionary[term].fr;
+        }else{
+            return 0;
+        }
+    }
+
+    getTermAppearances(term){
+        if(this.contains(term)){
+            return this.dictionary[term].dl;
+        }else{
+            return [];
         }
     }
 
@@ -47,19 +51,10 @@ module.exports = class ReverseIndex{
                 dl: [doc]
             }
         }
-
-        if(this.maxFrequency < this.dictionary[word].fr){
-            this.maxFrequency = this.dictionary[word].fr;
-            this.maxFrequencyHolder = word;
-        }
-
     }
 
     deleteWord(word){
         if(this.contains(word)){
-            if(word == this.maxFrequencyHolder){
-                this.refreshMaxFrequency();
-            }
             delete this.dictionary[word];
         }
     }

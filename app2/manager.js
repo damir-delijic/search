@@ -84,28 +84,20 @@ module.exports = class Manager{
     }
 
     autocomplete(entryVector){
-        let entry, i, trieResult;
+        let entry, i, autocomplete;
 
         for(i = 0; i < entryVector.length; i++){
             entry = entryVector[i];
 
-            trieResult = this.trie.suggest(entry.original);
-            entry.neighborhood = trieResult.suggestions;
+            autocomplete = this.trie.suggest(entry.original);
+            entry.neighborhood = autocomplete.suggestions;
             
-            if(this.reverseIndex.contains(trieResult.estimate)){
-                entry.estimate = trieResult.estimate;
+            if(this.reverseIndex.contains(autocomplete.estimate)){
+                entry.estimate = autocomplete.estimate;
             }else{
                 entry.estimate = entry.neighborhood.length > 0 ? entry.neighborhood[0] : undefined;
             }
-
-            if(entry.estimate){
-                entry.weight = this.termWeightMeasure(entry.estimate);
-            }
         }
-    }
-
-    termWeightMeasure(term){
-        return ((this.reverseIndex.maxFrequency - this.reverseIndex.dictionary[term].fr + 0.01) / ( this.reverseIndex.maxFrequency + 0.01)).toFixed(2); // sto je blizi maksimalnoj frekvenciji, manji mu je skor
     }
 
     correct(entryVector){
@@ -128,7 +120,7 @@ module.exports = class Manager{
                         if(entry.neighborhood.length == 0){
                             entry.neighborhood.push(candidate);
                         }else{
-                            if(this.reverseIndex.dictionary[candidate].fr > this.reverseIndex.dictionary[entry.neighborhood[0]].fr){
+                            if(this.reverseIndex.getTermFrequency(candidate) > this.reverseIndex.getTermFrequency(entry.neighborhood[0])){
                                 entry.neighborhood.unshift(candidate)
                             }else{
                                 entry.neighborhood.push(candidate);
@@ -139,7 +131,6 @@ module.exports = class Manager{
 
                 if(entry.neighborhood.length > 0){
                     entry.estimate = entry.neighborhood[0];
-                    entry.weight = this.termWeightMeasure(entry.estimate);
                 }
             }
             
@@ -150,25 +141,56 @@ module.exports = class Manager{
 
     }
 
+    termMeasure(term){
+        return this.reverseIndex.getTermFrequency(term);
+    }
+
+    retrieveFilteredAppearances(entryVector, query){
+        let hits = [];
+
+        let entry, i, j, neighbor, hit;
+
+        for(i = 0; i < entryVector.length; i++){
+            entry = entryVector[i];
+
+            if(entry.estimate){
+                hits.push({
+                    term: entry.estimate,
+                    appearances: this.filter(entry.estimate, query),
+                    primary: true
+                });
+                
+                for(j = 0; j < entry.neighborhood.length; j++){
+                    neighbor = entry.neighborhood[j];
+                    hit = {
+                        term: neighbor,
+                        appearances: this.filter(neighbor, query),
+                        primary: false
+                    }
+                }
+            }
+        }
+
+        return hits;
+    }
+
     filter(term, query){
         let result = [];
-
-
-        let obj, objs, col, i, j, k, field;
         
-        objs = this.reverseIndex.dictionary[term].dl;
-        
-        for(i = 0; i < objs.length; i++){
-            obj = objs[i];
-            // prolazi li filter kolekcija
+        let appearances = this.reverseIndex.getTermAppearances(term);
+        let appearance, collection, field;
+        let i,j,k;
+
+        for(i = 0; i < appearances.length; i++){
+            appearance = appearances[i];
+
             for(j = 0; j < query.collections.length; j++){
-                col = query.collections[j];
-                if(obj.s == col.name){
-                    // prolazi li filter polja
-                    for(k = 0; k < col.fields.length; k++){
-                        field = col.fields[k];
-                        if(obj.f == field){
-                            result.push(obj);
+                collection = query.collections[j];
+                if(collection.name == appearance.s){ // s je izvorna kolekcija (source)
+                    for(k = 0; k < collection.fields.length; k++){
+                        field = collection.fields[k];
+                        if(appearance.f == field){ // f je polje kolekcije 
+                            result.push(appearance);
                             break;
                         }
                     }
@@ -181,89 +203,118 @@ module.exports = class Manager{
     }
 
     group(hits){
-        let result = [];
 
-        let hit, objs, obj, weight, i, isNotFound, doc, j;
-        
-        let tempObj;
+        // pretvara term -> appearances u document -> fields -> match,position
 
-        for(hit in hits){
-            weight = hits[hit].weight;
-            objs = hits[hit].objs;
-            
-            for(i = 0; i < objs.length; i++){
-                obj = objs[i];
-                isNotFound = true;
-                for(j = 0; j < result.length; j++){
-                    doc = result[j];
-                    if(doc.source == obj.s && doc.id == obj.i){
-                        isNotFound = false;
-                        doc['fields'][obj.f]['positions'].push([obj.p, weight]);
-                        break; // moze break jer ga kacim na taj i ni na jedan drugi
+        let documents = [];
+        let termDocumentFrequency = {};
+
+        let hit, appearance, document;
+        let i, j, k;
+        let documentIsSeenForTheFirstTime;
+
+        for(i = 0; i < hits.length; i++){
+            hit = hits[i];
+            termDocumentFrequency[hit.term] = hit.appearances.length;
+            for(j = 0; j < hit.appearances.length; j++){
+                appearance = hit.appearances[j];
+                documentIsSeenForTheFirstTime = true;
+                for(k = 0; k < documents.length; k++){
+                    document = documents[k];
+                    if(document.source == appearance.s && document.id == appearance.i){
+                        documentIsSeenForTheFirstTime = false;
+                        if(document.fields[appearance.f]){
+                            document.fields[appearance.f].push([appearance.p, hit.term, hit.primary]); // nailazio je na dokument i na polje
+                        }else{
+                            document.fields[appearance.f] = [[appearance.p, hit.term, hit.primary]]; // nailazio je na dokument ali ne i na to polje
+                        }
+                        break;
                     }
                 }
 
-                if(isNotFound){
-                    tempObj = {};
-                    tempObj['source'] = obj.s;
-                    tempObj['id'] = obj.id;
-                    tempObj['fields'] = {};
-                    tempObj['fields'][obj.f]['positions'] = [[obj.p, weight]];
-                    result.push(tempObj);
+                if(documentIsSeenForTheFirstTime){ // ovo znaci da nije do sada naisao na taj dokument
+                    let newDocument = {};
+                    newDocument.source = appearance.s;
+                    newDocument.id = appearance.i;
+                    newDocument.fields = {};
+                    newDocument.fields[appearance.f] = [[appearance.p, hit.term, hit.primary]];
+                    documents.push(newDocument);
                 }
             }
         }
 
-        return result;
+        return {
+            documents: documents,
+            tdf: termDocumentFrequency
+        };
     }
 
-    sort(documents){
-        let result = [];
-        let document, i, resdoc;
-
+    sort(documents, tdf){
+        let sorted = [];
+        let unsortedDocument, i, sortedDocument;
+        let numberOfDocuments = documents.length;
         while(documents.length > 0){
-            document = documents.shift();
-            let score = this.rank(document);
-            for(i = 0; i < result.length; i++){ // i = insertion index
-                resdoc = result[i];
-                if(resdoc.score < score){
+            unsortedDocument = documents.shift();
+            let score = this.rank(unsortedDocument, tdf, numberOfDocuments);
+            for(i = 0; i < sorted.length; i++){ // i = insertion index
+                sortedDocument = sorted[i];
+                if(sortedDocument.score < score){
                     break;
                 }
             }
-            result.splice(i-1, 0, {
-                source: document.source,
-                id: document.id,
+            sorted.splice(i-1, 0, {
+                source: unsortedDocument.source,
+                id: unsortedDocument.id,
                 score: score
             });
         }
 
-        return result;
+        return sorted;
 
     }
 
-    rank(document){
+    rank(document, tdf, numberOfDocuments){
 
-        let fields = document.fields;
+        let finalScore = 1;
 
-        for(let field in fields){
-            let score = this.scorePositions(fields[field].positions);
+        for(let field in document.fields){
+            let score = this.scoreField(document.fields[field], tdf, numberOfDocuments);
             document['fields'][field] = score;
         }
 
-        // let config = this.config.data.collections[source];
-        // let weight = config.fields[field].weight;
+        for(let field in document.fields){
+            // pomoziti skorove polja sa tezinama i kombinovati ih na neki nacin
+        }
 
-        let score = 0;
+        
+
+        // // let config = this.config.data.collections[source];
+        // // let weight = config.fields[field].weight;
+
+        let score = 1;
 
 
 
 
         // score = score * weight;
-        return score;
+        return 1;
     }
 
-    scorePositions(positions){
+    scoreField(matches, tdf, numberOfDocuments){
+        return 1;
+    }
 
+    formEntryVector(queryTerms){
+        let entryVector = [];
+        let i;
+        for(i = 0; i < queryTerms.length; i++){
+            entryVector.push({
+                original: queryTerms[i],
+                estimate: false,
+                neighborhood: []
+            });
+        }
+        return entryVector;
     }
 
     search(query){
@@ -275,19 +326,10 @@ module.exports = class Manager{
 
         queryText = query.text.toString();
         queryText = queryText.substring(0, 50);
+
         queryTerms = this.nlp(queryText);
 
-        let entryVector = [];
-        let i;
-        for(i = 0; i < queryTerms.length; i++){
-            entryVector.push({
-                original: queryTerms[i],
-                estimate: false,
-                neighborhood: [],
-                weight: 0,
-                isKnown: this.reverseIndex.contains(queryTerms[i]) ? true : false
-            });
-        }
+        let entryVector = this.formEntryVector(queryTerms);
         
         this.autocomplete(entryVector); // modifikuje entryVector
         this.correct(entryVector); //  modifikuje entry vector
@@ -296,33 +338,17 @@ module.exports = class Manager{
         // brojevi slovima i obrnuto
         // console.log(entryVector);
 
-        let hits = {};
-
-        let entry;
-
-        let j, neighbor;
-
-        for(i = 0; i < entryVector.length; i++){
-            entry = entryVector[i];
-
-            if(entry.estimate){
-                hits[entry.estimate] = {
-                    weight: entry.weight,
-                    objs: this.filter(entry.estimate, query)
-                }
-                
-                for(j = 0; j < entry.neighborhood.length; j++){
-                    neighbor = entry.neighborhood[j];
-                    hits[neighbor] = {
-                        weight: entry.weight * 0.5,
-                        objs: this.filter(neighbor, query)
-                    }
-                }
-            }
+        let hits = this.retrieveFilteredAppearances(entryVector, query);
+        let grouped = this.group(hits);
+        let documents = grouped.documents;
+        let tdf = grouped.tdf;
+        for(let i = 0; i < documents.length; i++){
+            console.log('Document: ', documents[i].source, documents[i].id);
+            console.log('Fields: ', documents[i].fields);
         }
-
-        let documents = this.group(hits);
-        let sorted = this.sort(documents);
+        // console.log(tdf);
+        let sorted = this.sort(documents, tdf);
+        // console.log(sorted)
         let end = Date.now();
         console.log(end - start)
         return sorted;
