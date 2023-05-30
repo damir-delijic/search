@@ -215,6 +215,7 @@ module.exports = class Manager{
     }
 
     rank(documents){
+        return documents;
         /// grupisane su pojave po poljima
         let result = [];
 
@@ -242,6 +243,18 @@ module.exports = class Manager{
 
         return result;
 
+    }
+
+    tune(){
+
+    }
+
+    pin(){
+
+    }
+
+    sort(){
+        
     }
 
     scorePositionsForField(positions, name){
