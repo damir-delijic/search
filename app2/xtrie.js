@@ -25,9 +25,10 @@ module.exports = class Trie{
         console.log("Trie end")
     }
 
-    bfs(node, word){
+    bfs(node, word, levelLimit){
         
         let possibilitiesListNotExhausted = true;
+        let levelLimitNotReached = true;
 
         let result = [];
         
@@ -37,9 +38,9 @@ module.exports = class Trie{
         for(let child in node.children){
             nextLevelQueue.push([child, node.children[child]]);
         }
-
-        while(possibilitiesListNotExhausted){
-
+        let level = 0;
+        while(possibilitiesListNotExhausted && levelLimitNotReached){
+            level += 1;
             while(nextLevelQueue.length > 0){
                 let pair = nextLevelQueue.shift(); // pair = [childname, childobj] odnosno [karakter, njegov objekat]
                 currentLevelQueue.push(pair)
@@ -63,6 +64,10 @@ module.exports = class Trie{
 
             if(nextLevelQueue.length == 0){
                 possibilitiesListNotExhausted = false;
+            }
+
+            if(levelLimit && levelLimit <= level){
+                levelLimitNotReached = false;
             }
 
         }
