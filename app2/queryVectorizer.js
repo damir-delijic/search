@@ -5,12 +5,20 @@ module.exports = class QueryVectorizer{
         this.preprocessor = preprocessor;
     }
 
-    vectorize(query){
-        let text = query;
-        text = query.toString();
-        text = text.substring(0, text.length > 50 ? 50 : text.length);
-
-
+    vectorize(queryText){
+        console.log(queryText)
+        let query = queryText.substring(0, queryText.length > 50 ? 50 : queryText.length);
+        let tokens = this.tokenize(query);
+        let entryVector = [];
+        let i;
+        for(i = 0; i < tokens.length; i++){
+            entryVector.push({
+                original: tokens[i],
+                estimate: false,
+                neighborhood: []
+            });
+        }
+        return entryVector;
         
     }
 
@@ -51,7 +59,6 @@ module.exports = class QueryVectorizer{
             }
 
         }
-
 
         return result;
     }

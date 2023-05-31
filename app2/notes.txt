@@ -8,3 +8,4 @@ kako tacno rqaditi sa queryem od vise rijeci, u smislu trie-a
 kolekcija jedna klasa, u argumentima joj se predaju funkcije za getovanje podataka
 
 tezina riejci moze biti nula povecati je samo za 0.1
+napraviti da dokument dobija positional i termoccurence skor, ukombinovati i ih i tako ih sortirati

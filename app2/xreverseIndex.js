@@ -35,7 +35,7 @@ module.exports = class ReverseIndex{
         }
 
         if(this.contains(word)){
-            this.dictionary[word].a.push(doc);
+            this.dictionary[word].a.push(appearance);
         }else{
             this.dictionary[word] = {
                 a: [appearance]

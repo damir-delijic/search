@@ -8,7 +8,7 @@ cManager.build();
 
 let start = Date.now();
 let result = cManager.search({
-    text: 'bruce willis glongisan',
+    text: 'bruce willis gldngksan',
     // text: 'bruce bruce bruce',
     collections: [
         {

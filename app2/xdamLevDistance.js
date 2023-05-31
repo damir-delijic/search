@@ -7,12 +7,12 @@ module.exports = class DamLevDistance{
     }
 
     calculateSingle(word){
-        let edits1 = this.edits1(word);
-        return this.edits2(edits1);
+        return this.edits1(word);
     }
 
     calculateDouble(word){
-        return this.edits1(word);
+        let edits1 = this.edits1(word);
+        return this.edits2(edits1);
     }
 
     edits1(word){

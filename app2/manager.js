@@ -4,6 +4,8 @@ const Preprocessor = require('./xpreprocessor')
 const DamLevDistance = require('./xdamLevDistance');
 const ReverseIndex = require('./xreverseIndex');
 const Trie = require('./xtrie');
+const QueryVectorizer = require('./queryVectorizer');
+const QueryTransformator = require('./queryTransformator')
 
 module.exports = class Manager{
 
@@ -12,9 +14,15 @@ module.exports = class Manager{
         this.config = config;
 
         this.preprocessor = new Preprocessor();
-        this.damLevDistance = new DamLevDistance(config.alphabet);
+
         this.reverseIndex = new ReverseIndex();
         this.trie = new Trie(this.reverseIndex);
+
+        this.queryVectorizer = new QueryVectorizer(this.config.nlp, this.preprocessor);
+
+        this.damLevDistance = new DamLevDistance(config.alphabet);
+        this.queryTransformator = new QueryTransformator(this.trie, this.damLevDistance, this.reverseIndex, this.config.minSingleEditTokenLen, this.config.minDoubleEditTokenLen);
+
     }
 
     build(){
@@ -39,119 +47,6 @@ module.exports = class Manager{
 
     get(name){
         return this.collections[name];
-    }
-
-    nlp(query){
-        let config = this.config.nlp;
-        config.separators = config.separators || [];
-        config.charMap = config.charMap || false;
-        config.minTokenLen = config.minTokenLen || 2;
-        config.stopwords = config.stopwords || [];
-
-        let result = [];
-        let tokens = this.preprocessor.tokenizeMulti(query, config.separators);
-
-        let i, j, isNotStopword, tokenIsLongEnough, stopword, token;
-
-        for(i = 0; i < tokens.length; i++){
-            tokens[i] = this.preprocessor.decapitalize(tokens[i]);
-            tokens[i] = this.preprocessor.basicDepunctuation(tokens[i]);
-
-            if(config.charMap){
-                tokens[i] = this.preprocessor.reMapCharacters(tokens[i], config.charMap);
-            }
-
-            tokenIsLongEnough = tokens[i].length >= config.minTokenLen;
-            
-            if(tokenIsLongEnough){
-                token = tokens[i];
-                isNotStopword = true;
-                for(j = 0; j < config.stopwords.length; j++){
-                    stopword = config.stopwords[j];
-                    if(token == stopword){
-                        isNotStopword = false;
-                        break;
-                    }
-                }
-                if(isNotStopword) result.push(token);
-
-            }
-
-        }
-
-
-        return result;
-    }
-
-    formEntryVector(queryTerms){
-        let entryVector = [];
-        let i;
-        for(i = 0; i < queryTerms.length; i++){
-            entryVector.push({
-                original: queryTerms[i],
-                estimate: false,
-                neighborhood: []
-            });
-        }
-        return entryVector;
-    }
-
-    autocomplete(entryVector){
-        let entry, i, autocomplete;
-
-        for(i = 0; i < entryVector.length; i++){
-            entry = entryVector[i];
-
-            autocomplete = this.trie.suggest(entry.original);
-            entry.neighborhood = autocomplete.suggestions;
-            
-            if(this.reverseIndex.contains(autocomplete.estimate)){
-                entry.estimate = autocomplete.estimate;
-            }else{
-                entry.estimate = entry.neighborhood.length > 0 ? entry.neighborhood[0] : undefined;
-            }
-        }
-    }
-
-    correct(entryVector){
-        let entry, i, damLevResult, candidate, j, entryHasNoEstimate, tokenIsLongEnough;
-
-        for(i = 0; i < entryVector.length; i++){
-            entry = entryVector[i];
-            entryHasNoEstimate = !entry.estimate
-            tokenIsLongEnough = entry.original.length > this.config.minSingleEditTokenLen;
-
-            if(entryHasNoEstimate && tokenIsLongEnough){
-                if(entry.original.length < this.config.minDoubleEditTokenLen){
-                    damLevResult = this.damLevDistance.calculateSingle(entry.original);
-                }else{
-                    damLevResult = this.damLevDistance.calculateDouble(entry.original);
-                }
-                for(j = 0; j < damLevResult.length; j++){
-                    candidate = damLevResult[j];
-                    if(this.reverseIndex.contains(candidate)){
-                        if(entry.neighborhood.length == 0){
-                            entry.neighborhood.push(candidate);
-                        }else{
-                            if(this.reverseIndex.getTermFrequency(candidate) > this.reverseIndex.getTermFrequency(entry.neighborhood[0])){
-                                entry.neighborhood.unshift(candidate)
-                            }else{
-                                entry.neighborhood.push(candidate);
-                            }
-                        }
-                    }
-                }
-
-                if(entry.neighborhood.length > 0){
-                    entry.estimate = entry.neighborhood[0];
-                }
-            }
-            
-        }
-    }
-
-    synonyms(entryVector){
-
     }
 
     retrieveFilteredAppearances(entryVector, query){
@@ -447,34 +342,21 @@ module.exports = class Manager{
 
     search(query, limit){
 
-        let queryText, queryTerms;
+        let entryVector = this.queryVectorizer.vectorize(query.text);
+        let transformedVector = this.queryTransformator.transform(entryVector);
+        console.log(transformedVector);
+        return [];
+        // let hits = this.retrieveFilteredAppearances(entryVector, query);
 
-        queryText = query.text.toString();
-        queryText = queryText.substring(0, 50);
-
-        queryTerms = this.nlp(queryText);
-
-        let entryVector = this.formEntryVector(queryTerms);
+        // let grouped = this.group(hits);
+        // let documents = grouped.documents;
+        // let tdf = grouped.tdf;
         
-        // modifikuju entry vektor
-        this.autocomplete(entryVector);
-        this.correct(entryVector);
-        this.synonyms(entryVector);
-        // this.transformQuery(entryVector);
-        // brojevi slovima i obrnuto
-        
-
-        let hits = this.retrieveFilteredAppearances(entryVector, query);
-
-        let grouped = this.group(hits);
-        let documents = grouped.documents;
-        let tdf = grouped.tdf;
-        
-        let sorted = this.sort(documents, tdf);
+        // let sorted = this.sort(documents, tdf);
 
 
 
-        return sorted.slice(0, limit);
+        // return sorted.slice(0, limit);
 
     }
 
