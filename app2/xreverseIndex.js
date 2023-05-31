@@ -9,17 +9,9 @@ module.exports = class ReverseIndex{
         else return false
     }
 
-    print(){
-        for(let word in this.dictionary){
-            console.log("Word: ", word);
-            console.log("Frequency: ", this.dictionary[word].fr);
-            console.log("Documents: ", this.dictionary[word].dl);
-        }
-    }
-
     getTermFrequency(term){
         if(this.contains(term)){
-            return this.dictionary[term].fr;
+            return this.dictionary[term].a.length;
         }else{
             return 0;
         }
@@ -27,7 +19,7 @@ module.exports = class ReverseIndex{
 
     getTermAppearances(term){
         if(this.contains(term)){
-            return this.dictionary[term].dl;
+            return this.dictionary[term].a;
         }else{
             return [];
         }
@@ -35,7 +27,7 @@ module.exports = class ReverseIndex{
 
     insert(word, source, id, field, position){
 
-        let doc = {
+        let appearance = {
             s: source,
             i: id,
             f: field,
@@ -43,14 +35,13 @@ module.exports = class ReverseIndex{
         }
 
         if(this.contains(word)){
-            this.dictionary[word].fr += 1;
-            this.dictionary[word].dl.push(doc);
+            this.dictionary[word].a.push(doc);
         }else{
             this.dictionary[word] = {
-                fr: 1,
-                dl: [doc]
+                a: [appearance]
             }
         }
+
     }
 
     deleteWord(word){
@@ -60,45 +51,21 @@ module.exports = class ReverseIndex{
     }
 
     deleteDocument(source, id){
-        let word, doc, i;
+        let word, appearance, i;
         
         for(word in this.dictionary){
-            for(i = 0; i < this.dictionary[word].dl.length; i++){
+            for(i = 0; i < this.dictionary[word].a.length; i++){
 
-                doc = this.dictionary[word].dl[i];
-                if(doc.s == source && doc.i == id){
-                    this.dictionary[word].dl.splice(i, 1);
-                    this.dictionary[word].fr -= 1;
+                appearance = this.dictionary[word].a[i];
+                if(appearance.s == source && appearance.i == id){
+                    this.dictionary[word].a.splice(i, 1);
                     i -= 1;
                 }
             }
-            if(this.dictionary[word].fr == 0){
+            if(this.dictionary[word].a.length == 0){
                 this.deleteWord(word)
             }
         }
     }
 
 }
-
-/*
-        dictionary = {
-            "rijec": {
-                "fr": k, ----- k > 0 (frequency, ucestalost)
-                "dl":[  --------- (document list, lista pojavljivanja)
-                    {
-                        "s": "movies", ---- (source kolekcija)
-                        "i": "12", ----- (id dokumenta u toj kolekciji)
-                        "f": "title", ----- (polje u kom se pojavila rijec)
-                        "p": 1 ------- (pozicija u polju te rijeci)
-                    },
-                    {
-                        ...
-                    },
-                    .
-                    .
-                    .
-                ]
-            }
-        }
-    */
-

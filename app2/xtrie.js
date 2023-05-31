@@ -1,11 +1,6 @@
 
 module.exports = class Trie{
 
-    /* 
-        Formira trie drvo na osnovu rijeci iz rjecnika
-    */
-
-
     constructor(reverseIndex){
         this.root = new Node();
         this.dictionary = reverseIndex;
@@ -23,7 +18,7 @@ module.exports = class Trie{
         this.root.print("-");
     }
 
-    bfs(node, word, levelLimit){
+    breadthSearch(node, word, levelLimit){
         
         let possibilitiesListNotExhausted = true;
         let levelLimitNotReached = true;
@@ -87,7 +82,7 @@ module.exports = class Trie{
         };
 
         if(distance == word.length || (this.dictionary.contains(subWord) && distance/word.length >= 0.75)){
-            result.suggestions = this.bfs(node, subWord, levelLimit);
+            result.suggestions = this.breadthSearch(node, subWord, levelLimit);
         }
 
         return result;

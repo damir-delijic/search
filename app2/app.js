@@ -6,9 +6,10 @@ const Manager = require('./manager');
 var cManager = new Manager(config);
 cManager.build();
 
-
-cManager.search({
+let start = Date.now();
+let result = cManager.search({
     text: 'bruce willis glongisan',
+    // text: 'bruce bruce bruce',
     collections: [
         {
             name:'movies',
@@ -17,6 +18,10 @@ cManager.search({
     ]
 
 });
+let end = Date.now();
+
+console.log('Time in ms:', end-start);
+// console.log('Result', result);
 
 
 
