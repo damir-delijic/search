@@ -15,8 +15,8 @@ module.exports = class Manager{
 
         this.preprocessor = new Preprocessor();
 
-        this.trie = new Trie(this.reverseIndex);
         this.reverseIndex = new ReverseIndex();
+        this.trie = new Trie(this.reverseIndex);
         this.collections = {};
         this.build();
         

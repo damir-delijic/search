@@ -44,7 +44,6 @@ module.exports = class Trie{
                 
                 let substr = pair[0];
                 let node = pair[1];
-
                 if(this.dictionary.contains(word + substr)){ // ako postoji u rjecniku
                     result.push(word + substr);
                 }

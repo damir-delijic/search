@@ -111,7 +111,7 @@ module.exports = class QueryHandler{
                 neighbor = entry.neighborhood.shift();
                 newVector.push({
                     estimate: neighbor,
-                    score: 0.01
+                    score: 0.05
                 });
             }
 
