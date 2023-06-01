@@ -31,6 +31,10 @@
         },
         "minTokenLength": 2,
         "stopwords": ["pticurina"]
+    },
+    "synonyms":{
+        "pomorandza": "narandza",
+        "narandza": "pomorandza"
     }
     
 }

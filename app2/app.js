@@ -7,7 +7,7 @@ var cManager = new Manager(config);
 
 let start = Date.now();
 let result = cManager.search({
-    text: '200',
+    text: 'narandzananogle',
     // text: 'bruce bruce bruce',
     collections: [
         {

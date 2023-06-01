@@ -20,7 +20,7 @@ module.exports = class Manager{
         this.collections = {};
         this.build();
         
-        this.queryHandler = new QueryHandler(this.config.nlp, this.preprocessor, this.trie, this.reverseIndex);
+        this.queryHandler = new QueryHandler(this.config.nlp, this.config.synonyms, this.preprocessor, this.trie, this.reverseIndex);
         this.documentHandler = new DocumentHandler(this.reverseIndex, this.config.data);
     }
 

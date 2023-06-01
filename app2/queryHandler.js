@@ -1,7 +1,8 @@
 module.exports = class QueryHandler{
 
-    constructor(config, preprocessor, trie, dictionary){
+    constructor(config, synonyms, preprocessor, trie, dictionary){
         this.nlp = config;
+        this.synonyms = synonyms;
         this.preprocessor = preprocessor;
         this.trie = trie;
         this.dictionary = dictionary;
@@ -120,13 +121,48 @@ module.exports = class QueryHandler{
                     estimate: entry.estimate,
                     score: 1
                 })
+            }else{
+                newVector.push({
+                    estimate: entry.original,
+                    score: 0
+                });
             }
         }
        return newVector;
     }
 
     synonims(vector){
-        return vector;
+        console.log(vector);
+        let newVector = []
+
+        let entry, i, synonymAlreadyPresent, synonym;
+        while(vector.length > 0){
+            entry = vector.shift();
+            
+            synonymAlreadyPresent = false;
+            synonym = this.synonyms[entry.estimate]
+            if(synonym){
+                for(i = 0; i < newVector.length; i++){
+                    if(synonym == newVector.original){
+                        synonymAlreadyPresent = true;
+                        break;
+                    }
+               }
+            }
+            if(entry.score > 0){
+                newVector.push(entry);
+            }
+
+            if(synonym && !synonymAlreadyPresent){
+                newVector.push({
+                    estimate: synonym,
+                    score: 0.3
+                });
+            }
+            
+        }
+        console.log(newVector)
+        return newVector;
     }
 
     vectorize(tokens, vector){
