@@ -1,19 +1,14 @@
+const Preprocessor = require('./preprocessor');
+
 module.exports = class Collection{
 
     constructor(options){
         this.config = options.config;
-        this.nlp = options.nlp;
+        this.defaultConfigNLP = options.defaultConfigNLP;
         this.name = options.name;
-        this.preprocessor = options.preprocessor;
         this.reverseIndex = options.reverseIndex;
         this.trie = options.trie;
         this.data = [];
-    }
-
-    fetch(list){
-        if(this.config.type == "json"){
-            return [];
-        }
     }
 
     build(){
@@ -37,6 +32,12 @@ module.exports = class Collection{
         this.handleData();
     }
 
+    fetch(list){
+        if(this.config.type == "json"){
+            return list;
+        }
+    }
+
     insert(document){
         this.handleDocument(document);
     }
@@ -56,43 +57,57 @@ module.exports = class Collection{
     }
 
     handleField(document, field){
-        let content = document[field];
-        let word, words, position;
-    
+        let content, words, word, position;
+        content = document[field];
         words = this.processText(content, field);
-        
+
         for(position = 0; position < words.length; position++){
             word = words[position];
             this.reverseIndex.insert(word, this.name, document.id, field, position)
             this.trie.insert(word);
         }
-
     }
 
     processText(text, field){
-        
-        let separators = this.config.fields[field].separators || this.nlp.separators || [];
-        let charMap = this.nlp.charMap;
-        let stopwords = this.nlp.stopwords || [];
-        let minTokenLength = this.nlp.minTokenLength;
 
+        let defaultConfigNLP = this.defaultConfigNLP;
+        let fieldSpecificSeparators = this.config.fields[field] ? this.config.fields[field].separators : false;
+        let config = {
+            separators: fieldSpecificSeparators || defaultConfigNLP.separators || [],
+            punctuation: defaultConfigNLP.punctuation || false,
+            charmap: defaultConfigNLP.charMap,
+            stopwords: defaultConfigNLP.stopwords || [],
+            minTokenLen: defaultConfigNLP.minTokenLen || 2
+        }
+
+        let separators = config.separators;
+        let punctuation = config.punctuation;
+        let charmap = config.charmap;
+        let minTokenLen = config.minTokenLen;
+        let stopwords = config.stopwords;
         let result = [];
         
-        let tokens = this.preprocessor.tokenize(text, separators);
+        let tokens;
+        tokens = Preprocessor.tokenize(text, separators);
         
-        let i, j, isNotStopword, stopword, token;
+        let i, j, isNotStopword, tokenIsLongEnough, stopword, token;
 
         for(i = 0; i < tokens.length; i++){
-            tokens[i] = this.preprocessor.decapitalize(tokens[i]);
-            tokens[i] = this.preprocessor.depunctuate(tokens[i])
-
-            if(charMap){
-                tokens[i] = this.preprocessor.reMapCharacters(tokens[i], charMap);
+            tokens[i] = Preprocessor.decapitalize(tokens[i]);
+            if(punctuation){
+                tokens[i] = Preprocessor.customDepunctuate(tokens[i]);
+            }else{
+                tokens[i] = Preprocessor.depunctuate(tokens[i], punctuation)
             }
 
-            token = tokens[i];
-            if(token.length > minTokenLength){
-                
+            if(charmap){
+                tokens[i] = Preprocessor.reMapCharacters(tokens[i], charmap);
+            }
+
+            tokenIsLongEnough = tokens[i].length >= minTokenLen;
+            
+            if(tokenIsLongEnough){
+                token = tokens[i];
                 isNotStopword = true;
                 for(j = 0; j < stopwords.length; j++){
                     stopword = stopwords[j];
@@ -105,11 +120,9 @@ module.exports = class Collection{
 
             }
 
-
         }
 
         return result;
-
     }
 
 }

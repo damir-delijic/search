@@ -11,17 +11,17 @@
                         "weight": 1
                     },
                     "actor": {
-                        "separators": [","],
+                        "separators": [],
                         "weight": 1
                     }
                 }
             }
         }
     },
+    "alphabet": "abcdefghijklmnopqrstuvwxyz",
+    "minSingleEditTokenLen": 3,
+    "minDoubleEditTokenLen": 5,
     "nlp":{
-        "maxQueryLength": 50,
-        "minCorrectionLength": 4,
-        "letters": "abcdefghijklmnopqrstuvwxyz",
         "charMap": {
             "ć": "c",
             "č": "c",
@@ -29,8 +29,9 @@
             "ž": "z",
             "đ": "d"
         },
-        "minTokenLength": 2,
-        "stopwords": ["pticurina"]
+        "minLenToken": 2,
+        "stopwords": ["pticurina"],
+        "separators": []
     }
     
 }

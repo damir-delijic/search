@@ -1,48 +1,97 @@
 const Collection = require('./collection');
 const ReverseIndex = require('./reverseIndex');
-const Preprocessor = require('./preprocessor')
 const Trie = require('./trie');
 
+const Preprocessor = require('./preprocessor')
 
-const QueryHandler = require('./queryHandler');
-const DocumentHandler = require('./documentHandler');
-
+const QueryVectorizer = require('./vectorizeQuery');
+const QueryTransformator = require('./transformQuery');
+const DocumentRetriever = require('./documentRetriever');
 
 module.exports = class Manager{
 
     constructor(config){
         this.config = config;
 
-        this.preprocessor = new Preprocessor();
-
-        this.trie = new Trie(this.reverseIndex);
         this.reverseIndex = new ReverseIndex();
+        this.trie = new Trie(this.reverseIndex);
         this.collections = {};
         this.build();
-        
-        this.queryHandler = new QueryHandler(this.config.nlp, this.preprocessor, this.trie, this.reverseIndex);
-        this.documentHandler = new DocumentHandler(this.reverseIndex, this.config.data);
     }
 
     build(){
-        let collections, collection;
+        let collections, collection, options;
 
         collections = this.config.data.collections;
 
         for(collection in collections){
             
-            let options = {
+            options = {
                 name: collection,
                 config: collections[collection],
-                nlp: this.config.nlp,
-                preprocessor: this.preprocessor,
+                defaultConfigNLP: this.config.nlp,
                 reverseIndex: this.reverseIndex,
                 trie: this.trie
             }
-
+           
             this.collections[collection] = new Collection(options);
             this.collections[collection].build();
         }
+    }
+
+    
+
+    
+
+    sort(documents, tdf){
+        let sorted = [];
+        let unsortedDocument, i, sortedDocument;
+        let numberOfDocuments = documents.length;
+        // {s: soruce, i:id, fields: {
+        //     fieldname: {ps:position, t:term, p: primary}
+        // }}
+
+        let tidf = {};
+        for(let term in tdf){
+            tidf[term] = (Math.log( numberOfDocuments / tdf[term] ) + 1)/toFixed(4); 
+        }
+
+
+        while(documents.length > 0){
+            unsortedDocument = documents.shift();
+            let score = this.rank(unsortedDocument, tidf);
+            for(i = 0; i < sorted.length; i++){ // i = insertion index
+                sortedDocument = sorted[i];
+                if(sortedDocument.score < score){
+                    break;
+                }
+            }
+            sorted.splice(i, 0, {
+                source: unsortedDocument.s,
+                id: unsortedDocument.i,
+                score: score
+            });
+        }
+
+        return sorted;
+    }
+
+    rank(document, tidf){
+        
+        let result = 0.01;
+
+        let sumOfWeights = 0.01;
+
+        let config = this.config.data.collections[document.s];
+        let score, weight;
+        for(let field in document.f){
+            score = this.scoreField(document.f[field], tidf);
+            weight = config.fields[field].weight || 1;
+            result = result + score * weight;
+            sumOfWeights += weight;
+        }
+
+        return (result / sumOfWeights).toFixed(4);
     }
 
     scoreField(matches, tidf){
@@ -131,18 +180,63 @@ module.exports = class Manager{
         return score;
     }
 
+    calculateFieldTermOccurenceScore(matches, tidf){
+        let result = 0;
+        let match, i, term, primary;
+        for(i = 0; i < matches.length; i++){
+            match = matches[i];
+            term = match.t;
+            primary = match.p;
+            result += (this.calculateTermScore(this.getTermFrequency(term), primary, tidf[term]));
+        }
+
+        return result > 0 ? result : 1;
+    }
+
     calculateFieldPositionalScore(sortedMatches){
 
     }
 
+    calculateTermScore(tf, primary, termtidf){
+        let pf = primary ? 1 : 0.01;
+        
+
+
+        return 1;
+        // let tf = this.reverseIndex.getTermFrequency(term);
+        // let primarityFactor = isPrimary ? 1 : 0.1;
+        // let abs = averagetf - tf < 0 ? tf - averagetf : averagetf - tf;
+        // let tfAvgTfMeasure = ((averagetf + 0.1) / (abs + 0.1 ))
+        // return primarityFactor * tfAvgTfMeasure * (numberOfDocuments / df).toFixed(4);
+    }
+
     search(query){
+        let queryVectorizerConfig = {
+            maxQueryLen: this.config.maxQueryLen,
+            separators: this.config.nlp.separators,
+            charMap: this.config.nlp.charMap,
+            minTokenLen: this.config.nlp.minTokenLen,
+            stopwords: this.config.nlp.stopwords
+        }
+        let entryVector = QueryVectorizer.vectorize({
+            text: query.text,
+            config: queryVectorizerConfig
+        });
 
-        let vector = this.queryHandler.handle(query.text);
-        console.log(vector);
-        let documents = this.documentHandler.retrieve(vector, query.collections);
-        // console.log(documents);
+        // console.log(entryVector)
 
-        // return documents;
+        let transformedVector = QueryTransformator.transform({
+            dictionary: this.reverseIndex,
+            trie: this.trie,
+            entryVector: entryVector,
+            minEditLen: this.config.minSingleEditTokenLen,
+            minDoubleEditLen: this.config.minDoubleEditTokenLen,
+            letters: this.config.alphabet
+        });
+
+        // console.log(transformedVector);
+
+        // let document = this.documentRetriever.retrieveDocuments(transformedVector, query);
         return [];
         // let hits = this.retrieveFilteredAppearances(entryVector, query);
 

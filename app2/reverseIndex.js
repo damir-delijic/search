@@ -9,7 +9,7 @@ module.exports = class ReverseIndex{
         else return false
     }
 
-    getTermFrequency(term){
+    getFrequency(term){
         if(this.contains(term)){
             return this.dictionary[term].a.length;
         }else{
@@ -17,7 +17,7 @@ module.exports = class ReverseIndex{
         }
     }
 
-    getTermAppearances(term){
+    getAppearances(term){
         if(this.contains(term)){
             return this.dictionary[term].a;
         }else{

@@ -1,14 +1,11 @@
-module.exports = class QueryVectorizer{
+const Preprocessor = require('./preprocessor')
 
-    constructor(config, preprocessor){
-        this.config = config;
-        this.preprocessor = preprocessor;
-    }
-
-    vectorize(queryText){
-        console.log(queryText)
-        let query = queryText.substring(0, queryText.length > 50 ? 50 : queryText.length);
-        let tokens = this.tokenize(query);
+module.exports = {
+    vectorize: function(options){
+        let text = options.text
+        let config = options.config;
+        let query = text.substring(0, text.length > config.maxQueryLen ? config.maxQueryLen : text.length);
+        let tokens = internal.process(query, config);
         let entryVector = [];
         let i;
         for(i = 0; i < tokens.length; i++){
@@ -19,29 +16,29 @@ module.exports = class QueryVectorizer{
             });
         }
         return entryVector;
-        
     }
+}
 
-    tokenize(query){
-        let config = this.config;
+let internal = {
+    process: function(text, config){
         config.separators = config.separators || [];
         config.charMap = config.charMap || false;
         config.minTokenLen = config.minTokenLen || 2;
         config.stopwords = config.stopwords || [];
-
+    
         let result = [];
-        let tokens = this.preprocessor.tokenizeMulti(query, config.separators);
-
+        let tokens = Preprocessor.tokenize(text, config.separators);
+    
         let i, j, isNotStopword, tokenIsLongEnough, stopword, token;
-
+    
         for(i = 0; i < tokens.length; i++){
-            tokens[i] = this.preprocessor.decapitalize(tokens[i]);
-            tokens[i] = this.preprocessor.basicDepunctuation(tokens[i]);
-
+            tokens[i] = Preprocessor.decapitalize(tokens[i]);
+            tokens[i] = Preprocessor.depunctuate(tokens[i]);
+    
             if(config.charMap){
-                tokens[i] = this.preprocessor.reMapCharacters(tokens[i], config.charMap);
+                tokens[i] = Preprocessor.reMapCharacters(tokens[i], config.charMap);
             }
-
+    
             tokenIsLongEnough = tokens[i].length >= config.minTokenLen;
             
             if(tokenIsLongEnough){
@@ -55,12 +52,11 @@ module.exports = class QueryVectorizer{
                     }
                 }
                 if(isNotStopword) result.push(token);
-
+    
             }
-
+    
         }
-
+    
         return result;
     }
-
 }
