@@ -19,8 +19,10 @@ let result = cManager.search({
 });
 let end = Date.now();
 
+console.log(result);
+
 console.log('Time in ms:', end-start);
-// console.log('Result', result);
+
 
 
 

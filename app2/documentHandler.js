@@ -14,8 +14,7 @@ module.exports = class DocumentRetriever{
         let documents = this.groupByDocument(hitsVector);
         let ranked = this.documentRanker.rank(documents, termsMeasures);
         let sorted = this.sort(ranked);
-        console.log(sorted);
-        return [];
+        return sorted;
     }
 
     filter(term, collections){
