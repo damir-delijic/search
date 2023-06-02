@@ -1,4 +1,4 @@
-module.exports = class DocumentRanker{
+module.exports = class Ranking{
 
     constructor(config){
         this.config = config;

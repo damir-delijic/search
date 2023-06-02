@@ -1,18 +1,18 @@
-const DocumentRanker = require('./documentRanker');
+const Ranking = require('./ranking');
 
 module.exports = class Retriever{
 
     constructor(rindex, config){
         this.rindex = rindex;
         this.config = config;
-        this.documentRanker = new DocumentRanker(this.config);
+        this.ranking = new Ranking(this.config);
     }
 
     retrieve(vector, collections){
         let hitsVector = this.getHitsVector(vector, collections)
         let termsMeasures = this.getTermsMeasures(hitsVector); // u koliko se dokumenata javlja nakon filtera, globalna frekvencija ima u rindex
         let documents = this.groupByDocument(hitsVector);
-        let ranked = this.documentRanker.rank(documents, termsMeasures);
+        let ranked = this.ranking.rank(documents, termsMeasures);
         let sorted = this.sort(ranked);
         return sorted;
     }
