@@ -1,5 +1,10 @@
 module.exports = class Rindex{
 
+    /* Invertovani index, pojam -> [lista pojava] */
+    /* pojava ->  objekat koji sadrzi izvornu kolekciju, id dokumenta u toj kolekciji, polje i poziciju dokumenta na kojoj se javio pojam */
+    /* s -> source, i -> id, f -> field, p -> position */
+    /* TODO omoguciti konzistentno brisanje sa ostalim strukturama podataka */
+
     constructor(){
         this.dictionary = {};
     }
