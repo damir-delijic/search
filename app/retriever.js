@@ -2,6 +2,15 @@ const Ranking = require('./ranking');
 
 module.exports = class Retriever{
 
+    /* Za dati query vektor vraca sortiranu, rangiranu listu relevatnih dokumenata (uz pomoc ranker-a) */
+    /* Trebaju mu indeksna struktura, konfiguracija i ranker */
+    /* Retrieve za vektor i 'collections'(filter po kolekcijama i poljima kolekcijes) vadi dokumente za date pojmove, filtrira po filterima ... */
+    /* ... cuva odredjene mjere vezane za termine po kojim se vrsi upit dok su u pogodnom formatu ... */
+    /* ... zatim grupise po dokumentima [lista dokumenata] */
+    /* dokument ->  source, id, polja: { imepolja: [lista pozicija i pojmova], imedrugogpolja: [-||-]}*/
+    /* Grupisani podaci zajedno sa mjerama vezanim za termine se predaju komponenti za rangiranje */
+    /* koja na kraju vraca [lista dokumenata, dokument -> source,id,score] koji se na krajus sortiraju po skoru*/
+
     constructor(rindex, config){
         this.rindex = rindex;
         this.config = config;
