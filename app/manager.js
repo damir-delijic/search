@@ -4,7 +4,7 @@ const Tokenizer = require('./tokenizer')
 const Trie = require('./trie');
 
 
-const QueryHandler = require('./queryHandler');
+const Query = require('./query');
 const DocumentHandler = require('./documentHandler');
 
 
@@ -20,7 +20,7 @@ module.exports = class Manager{
         this.collections = {};
         this.build();
         
-        this.queryHandler = new QueryHandler(this.config.nlp, this.config.synonyms, this.tokenizer, this.trie, this.rindex);
+        this.query = new Query(this.config.nlp, this.config.synonyms, this.tokenizer, this.trie, this.rindex);
         this.documentHandler = new DocumentHandler(this.rindex, this.config.data);
     }
 
@@ -50,8 +50,7 @@ module.exports = class Manager{
     }
 
     search(query){
-
-        let vector = this.queryHandler.handle(query.text);
+        let vector = this.query.handle(query.text);
         let documents = this.documentHandler.retrieve(vector, query.collections);
         documents = documents.length > 10 ? documents.slice(0, 10) : documents;
         let result = this.fetch(documents);

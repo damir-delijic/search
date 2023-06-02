@@ -1,4 +1,4 @@
-module.exports = class QueryHandler{
+module.exports = class Query{
 
     constructor(config, synonyms, tokenizer, trie, dictionary){
         this.nlp = config;
