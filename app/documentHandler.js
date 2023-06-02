@@ -2,15 +2,15 @@ const DocumentRanker = require('./documentRanker');
 
 module.exports = class DocumentRetriever{
 
-    constructor(reverseIndex, config){
-        this.reverseIndex = reverseIndex;
+    constructor(rindex, config){
+        this.rindex = rindex;
         this.config = config;
         this.documentRanker = new DocumentRanker(this.config);
     }
 
     retrieve(vector, collections){
         let hitsVector = this.getHitsVector(vector, collections)
-        let termsMeasures = this.getTermsMeasures(hitsVector); // u koliko se dokumenata javlja nakon filtera, globalna frekvencija ima u reverseindex
+        let termsMeasures = this.getTermsMeasures(hitsVector); // u koliko se dokumenata javlja nakon filtera, globalna frekvencija ima u rindex
         let documents = this.groupByDocument(hitsVector);
         let ranked = this.documentRanker.rank(documents, termsMeasures);
         let sorted = this.sort(ranked);
@@ -20,7 +20,7 @@ module.exports = class DocumentRetriever{
     filter(term, collections){
         let result = [];
         
-        let appearances = this.reverseIndex.getAppearances(term);
+        let appearances = this.rindex.getAppearances(term);
         let appearance, collection, field;
         let i,j,k;
 
@@ -73,7 +73,7 @@ module.exports = class DocumentRetriever{
             term = hit.term;
             termsMeasures[term] = {
                 local: hit.appearances.length,
-                global: this.reverseIndex.getFrequency(term),
+                global: this.rindex.getFrequency(term),
                 factor: hit.score
             }
         }

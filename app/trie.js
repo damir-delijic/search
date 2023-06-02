@@ -1,9 +1,9 @@
 
 module.exports = class Trie{
 
-    constructor(reverseIndex){
+    constructor(rindex){
         this.root = new Node();
-        this.dictionary = reverseIndex;
+        this.dictionary = rindex;
     }
 
     insert(word){

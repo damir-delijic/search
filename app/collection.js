@@ -5,7 +5,7 @@ module.exports = class Collection{
         this.nlp = options.nlp;
         this.name = options.name;
         this.tokenizer = options.tokenizer;
-        this.reverseIndex = options.reverseIndex;
+        this.rindex = options.rindex;
         this.trie = options.trie;
         this.data = [];
     }
@@ -63,7 +63,7 @@ module.exports = class Collection{
         
         for(position = 0; position < words.length; position++){
             word = words[position];
-            this.reverseIndex.insert(word, this.name, document.id, field, position)
+            this.rindex.insert(word, this.name, document.id, field, position)
             this.trie.insert(word);
         }
 

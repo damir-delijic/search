@@ -1,4 +1,4 @@
-module.exports = class ReverseIndex{
+module.exports = class Rindex{
 
     constructor(){
         this.dictionary = {};
