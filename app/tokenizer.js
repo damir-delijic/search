@@ -1,5 +1,12 @@
 module.exports = class Tokenizer{
     
+    /* Kada tokenizuje, podrazumijeva da je osnovni separator ' ' */
+    /* Pretvara sve u mala slova */
+    /* Otklanja znake interpunkcije, nije konfigurabilno */
+    /* Preslikavanje karaktera (npr č -> c itd.) pomocu charMap u konfigu */
+    
+    /* TODO: Da bude konfigurabilnije, stemming, lemming */
+
     constructor(){}
 
     tokenize(segment, separators){

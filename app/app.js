@@ -1,9 +1,14 @@
+
+/* Read config file */
 let pathtoconfig = './config.json';
 let fs = require('fs');
 const config = JSON.parse(fs.readFileSync(pathtoconfig, 'utf8'));
 
+/* Initialize structures */
 const Manager = require('./manager');
 var cManager = new Manager(config);
+
+/* Query */
 
 let start = Date.now();
 let result = cManager.search({
