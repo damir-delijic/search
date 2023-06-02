@@ -1,6 +1,11 @@
 
 module.exports = class Trie{
 
+    /* Od rjecnika pravi trie( prefiksno drvo ) */
+    /* https://db.in.tum.de/~leis/papers/ART.pdf */
+    /* Koristi se za autocomplete */
+    /* TODO kompresiovani cvor */
+
     constructor(rindex){
         this.root = new Node();
         this.dictionary = rindex;
@@ -14,14 +19,10 @@ module.exports = class Trie{
         this.root.delete(word);
     }
 
-    print(){
-        this.root.print("-");
-    }
-
-    breadthSearch(node, word, levelLimit){
+    breadthSearch(node, word, maxRelativeDepth){
         
         let possibilitiesListNotExhausted = true;
-        let levelLimitNotReached = true;
+        let maxRelativeDepthNotReached = true;
 
         let result = [];
         
@@ -31,9 +32,13 @@ module.exports = class Trie{
         for(let child in node.children){
             nextLevelQueue.push([child, node.children[child]]);
         }
-        let level = 0;
-        while(possibilitiesListNotExhausted && levelLimitNotReached){
-            level += 1;
+
+        let depth = 0;
+
+        while(possibilitiesListNotExhausted && maxRelativeDepthNotReached){
+
+            depth += 1;
+            
             while(nextLevelQueue.length > 0){
                 let pair = nextLevelQueue.shift(); // pair = [childname, childobj] odnosno [karakter, njegov objekat]
                 currentLevelQueue.push(pair)
@@ -58,8 +63,8 @@ module.exports = class Trie{
                 possibilitiesListNotExhausted = false;
             }
 
-            if(levelLimit && levelLimit <= level){
-                levelLimitNotReached = false;
+            if(maxRelativeDepth && maxRelativeDepth <= depth){
+                maxRelativeDepthNotReached = false;
             }
 
         }
@@ -68,15 +73,13 @@ module.exports = class Trie{
 
     }
 
-    suggest(word, levelLimit){
+    suggest(word, maxRelativeDepth){
         let pair =  this.root.search(word);
         let node = pair[0];
         let distance = word.length - pair[1];
 
-        let subWord = word.substring(0, distance); 
-
         if(distance == word.length){
-            return this.breadthSearch(node, subWord, levelLimit);
+            return this.breadthSearch(node, word, maxRelativeDepth);
         }
 
         return [];
@@ -135,16 +138,6 @@ class Node{
                 return true;
             }
         }
-    }
-
-    // stampa
-
-    print(indent){
-        for(let child in this.children){
-            this.children[child].print(indent + '-');
-            console.log(indent + child);
-        }
-       
     }
 
     // interna pretraga, vraca node i poziciju slova
