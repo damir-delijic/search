@@ -15,6 +15,17 @@
                         "weight": 1
                     }
                 }
+            },
+            "tvshows":{
+                "type": "json",
+                "path": "./data/tvshows.json",
+                "fields":{
+                    "id":{},
+                    "NAME":{
+                        "separators": [],
+                        "weight": 1
+                    }
+                }
             }
         }
     },

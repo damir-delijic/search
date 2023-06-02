@@ -150,10 +150,7 @@ module.exports = class DocumentRetriever{
             }
             sortedDocuments.splice(i, 0, document);
         }
-
         return sortedDocuments;
     }
-
-    
 
 }

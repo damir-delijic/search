@@ -7,12 +7,16 @@ var cManager = new Manager(config);
 
 let start = Date.now();
 let result = cManager.search({
-    text: 'narandzananogle',
+    text: 'drim tim',
     // text: 'bruce bruce bruce',
     collections: [
         {
             name:'movies',
             fields: ['title', 'actor']
+        },
+        {
+            name:'tvshows',
+            fields: ['NAME']
         }
     ]
 

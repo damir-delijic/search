@@ -132,7 +132,6 @@ module.exports = class QueryHandler{
     }
 
     synonims(vector){
-        console.log(vector);
         let newVector = []
 
         let entry, i, synonymAlreadyPresent, synonym;
@@ -161,7 +160,6 @@ module.exports = class QueryHandler{
             }
             
         }
-        console.log(newVector)
         return newVector;
     }
 

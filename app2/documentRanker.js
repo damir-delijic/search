@@ -50,7 +50,7 @@ module.exports = class DocumentRanker{
             weightsum += fweight;
         }
 
-        result = (result / weightsum).toFixed(4);
+        result = parseFloat((result / weightsum).toFixed(4));
 
         return result;
     }
@@ -88,10 +88,6 @@ module.exports = class DocumentRanker{
                 accumulationFactor = 1;
             }
         }
-        // console.log(termsMeasures);
-        // console.log('score', score);
-        // console.log('accumulated', accumulated)
-        // console.log('accumulationFactor', accumulationFactor)
 
         score += (accumulated * accumulationFactor);
         return score;
@@ -99,7 +95,7 @@ module.exports = class DocumentRanker{
     }
 
     termScore(localF, globalF, numOfDocuments, primary){
-        return primary * (1 + (Math.log(numOfDocuments / localF)) * (1 + Math.log(globalF / localF))).toFixed(4) ;
+        return parseFloat(primary * (1 + (Math.log(numOfDocuments / localF)) * (1 + Math.log(globalF / localF))).toFixed(4));
     }
 
 }
