@@ -1,6 +1,6 @@
 const Collection = require('./collection');
 const ReverseIndex = require('./reverseIndex');
-const Preprocessor = require('./preprocessor')
+const Tokenizer = require('./tokenizer')
 const Trie = require('./trie');
 
 
@@ -13,14 +13,14 @@ module.exports = class Manager{
     constructor(config){
         this.config = config;
 
-        this.preprocessor = new Preprocessor();
+        this.tokenizer = new Tokenizer();
 
         this.reverseIndex = new ReverseIndex();
         this.trie = new Trie(this.reverseIndex);
         this.collections = {};
         this.build();
         
-        this.queryHandler = new QueryHandler(this.config.nlp, this.config.synonyms, this.preprocessor, this.trie, this.reverseIndex);
+        this.queryHandler = new QueryHandler(this.config.nlp, this.config.synonyms, this.tokenizer, this.trie, this.reverseIndex);
         this.documentHandler = new DocumentHandler(this.reverseIndex, this.config.data);
     }
 
@@ -35,7 +35,7 @@ module.exports = class Manager{
                 name: collection,
                 config: collections[collection],
                 nlp: this.config.nlp,
-                preprocessor: this.preprocessor,
+                tokenizer: this.tokenizer,
                 reverseIndex: this.reverseIndex,
                 trie: this.trie
             }

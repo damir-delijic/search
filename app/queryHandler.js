@@ -1,9 +1,9 @@
 module.exports = class QueryHandler{
 
-    constructor(config, synonyms, preprocessor, trie, dictionary){
+    constructor(config, synonyms, tokenizer, trie, dictionary){
         this.nlp = config;
         this.synonyms = synonyms;
-        this.preprocessor = preprocessor;
+        this.tokenizer = tokenizer;
         this.trie = trie;
         this.dictionary = dictionary;
     }
@@ -182,16 +182,16 @@ module.exports = class QueryHandler{
         let stopwords = this.nlp.stopwords || [];
     
         let result = [];
-        let tokens = this.preprocessor.tokenize(text, separators);
+        let tokens = this.tokenizer.tokenize(text, separators);
 
         let i, j, isNotStopword, stopword, token;
 
         for(i = 0; i < tokens.length; i++){
-            tokens[i] = this.preprocessor.decapitalize(tokens[i]);
-            tokens[i] = this.preprocessor.depunctuate(tokens[i]);
+            tokens[i] = this.tokenizer.decapitalize(tokens[i]);
+            tokens[i] = this.tokenizer.depunctuate(tokens[i]);
 
             if(charMap){
-                tokens[i] = this.preprocessor.reMapCharacters(tokens[i], charMap);
+                tokens[i] = this.tokenizer.reMapCharacters(tokens[i], charMap);
             }
 
             token = tokens[i];

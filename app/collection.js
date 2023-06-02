@@ -4,7 +4,7 @@ module.exports = class Collection{
         this.config = options.config;
         this.nlp = options.nlp;
         this.name = options.name;
-        this.preprocessor = options.preprocessor;
+        this.tokenizer = options.tokenizer;
         this.reverseIndex = options.reverseIndex;
         this.trie = options.trie;
         this.data = [];
@@ -78,16 +78,16 @@ module.exports = class Collection{
 
         let result = [];
         
-        let tokens = this.preprocessor.tokenize(text, separators);
+        let tokens = this.tokenizer.tokenize(text, separators);
         
         let i, j, isNotStopword, stopword, token;
 
         for(i = 0; i < tokens.length; i++){
-            tokens[i] = this.preprocessor.decapitalize(tokens[i]);
-            tokens[i] = this.preprocessor.depunctuate(tokens[i])
+            tokens[i] = this.tokenizer.decapitalize(tokens[i]);
+            tokens[i] = this.tokenizer.depunctuate(tokens[i])
 
             if(charMap){
-                tokens[i] = this.preprocessor.reMapCharacters(tokens[i], charMap);
+                tokens[i] = this.tokenizer.reMapCharacters(tokens[i], charMap);
             }
 
             token = tokens[i];

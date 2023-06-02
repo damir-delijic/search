@@ -1,4 +1,4 @@
-module.exports = class Preprocessor{
+module.exports = class Tokenizer{
     
     constructor(){}
 
