@@ -4,7 +4,7 @@ module.exports = class Ranking{
         this.config = config;
     }
 
-    rank(documents, termsMeasures){
+    rank(documents, termsMeasures, relevantFlens){
         let result = [];
 
         let numberOfDocuments, i, document;
@@ -16,7 +16,7 @@ module.exports = class Ranking{
         for(i = 0; i < documents.length; i++){
             document = documents[i];
 
-            let score = this.scoreDocument(document, termsMeasures);
+            let score = this.scoreDocument(document, termsMeasures, relevantFlens[document.s]);
 
             result.push({
                 source: document.s,
@@ -37,7 +37,7 @@ module.exports = class Ranking{
         }
     }
 
-    scoreDocument(document, termsMeasures){
+    scoreDocument(document, termsMeasures, flens){
         let result = 0.01;
         let weightsum = 0.01;
 
@@ -45,6 +45,7 @@ module.exports = class Ranking{
 
         for(field in document.f){
             fscore = this.scoreField(document.f[field], termsMeasures);
+            fscore = fscore / flens[document.i][field];
             fweight = this.config.collections[document.s].fields[field].weight;
             result += (fscore * fweight);
             weightsum += fweight;

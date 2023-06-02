@@ -45,13 +45,43 @@ module.exports = class Manager{
         }
     }
 
+    getFlens(collections){
+        let result = {};
+        let i, name;
+        for(i = 0; i < collections.length; i++){
+            name = collections[i].name;
+            result[name] = this.collections[name].flens;
+        }
+
+        return result;
+    }
+
     fetch(documents){
         return documents;
     }
 
+    removeInvalidFilters(collections){
+        let collection, name, fields, field, i, j;
+        for(i = 0; i < collections.length; i++){
+            collection = collections[i];
+            name = collection.name;
+            fields = collection.fields;
+            for(j = 0; j < fields.length; j++){
+                field = fields[j];
+                if(this.config.data.collections[name].fields[field].ignore){
+                    collection.fields.splice(j, 1);
+                    j--;
+                }
+            }
+        }
+        return collections;
+    }
+
     search(query){
         let vector = this.query.handle(query.text);
-        let documents = this.retriever.retrieve(vector, query.collections);
+        let filter = this.removeInvalidFilters(query.collections);
+        let relevantFlens = this.getFlens(filter);
+        let documents = this.retriever.retrieve(vector, filter, relevantFlens);
         documents = documents.length > 10 ? documents.slice(0, 10) : documents;
         let result = this.fetch(documents);
         return result;

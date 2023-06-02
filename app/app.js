@@ -12,7 +12,7 @@ var cManager = new Manager(config);
 
 let start = Date.now();
 let result = cManager.search({
-    text: 'drim tim',
+    text: '200',
     // text: 'bruce bruce bruce',
     collections: [
         {

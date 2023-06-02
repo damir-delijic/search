@@ -17,11 +17,11 @@ module.exports = class Retriever{
         this.ranking = new Ranking(this.config);
     }
 
-    retrieve(vector, collections){
+    retrieve(vector, collections, relevantFlens){
         let hitsVector = this.getHitsVector(vector, collections)
         let termsMeasures = this.getTermsMeasures(hitsVector); // u koliko se dokumenata javlja nakon filtera, globalna frekvencija ima u rindex
         let documents = this.groupByDocument(hitsVector);
-        let ranked = this.ranking.rank(documents, termsMeasures);
+        let ranked = this.ranking.rank(documents, termsMeasures, relevantFlens);
         let sorted = this.sort(ranked);
         return sorted;
     }

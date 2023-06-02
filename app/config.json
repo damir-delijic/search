@@ -5,7 +5,9 @@
                 "type": "json",
                 "path": "./data/movies.json",
                 "fields":{
-                    "id":{},
+                    "id":{
+                        "ignore": "true"
+                    },
                     "title":{
                         "separators": [],
                         "weight": 1

@@ -8,6 +8,7 @@ module.exports = class Collection{
         this.rindex = options.rindex;
         this.trie = options.trie;
         this.data = [];
+        this.flens = {}; //  duzina polja dokumenata kolekcije
     }
 
     fetch(list){
@@ -51,8 +52,19 @@ module.exports = class Collection{
 
     handleDocument(document){
         for(let field in document){
-            this.handleField(document, field)
+            if(!this.config.fields[field].ignore) this.handleField(document, field); // ako polja ne treba ignorisati po konfiguracija onda idi u parsiranje
         }
+    }
+
+    setFlens(id, field, len){
+        if(!this.flens[id]){
+            this.flens[id] = {};
+        }
+
+        if(!this.flens[id][field]){
+            this.flens[id][field] = len;
+        }
+
     }
 
     handleField(document, field){
@@ -60,7 +72,8 @@ module.exports = class Collection{
         let word, words, position;
     
         words = this.processText(content, field);
-        
+        this.setFlens(document.id, field, words.length);
+
         for(position = 0; position < words.length; position++){
             word = words[position];
             this.rindex.insert(word, this.name, document.id, field, position)
