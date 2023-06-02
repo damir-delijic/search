@@ -1,5 +1,8 @@
 module.exports = class Ranking{
 
+    /* Daje score dokumentima u odnosu na query */
+    /* Da bi rangirao, potrebni su mu lista dokumenata, mjere za termine kao sto su lokalna globalna frekvencija, broj relevantnih dokumenata i da li je primarni/sekundarni/sinonim, i duzine polja svakog dokumenta */
+    /* Ocjenjuje dokument na osnovu tezina polja, duzine polja, ocjene terma */
     constructor(config){
         this.config = config;
     }
