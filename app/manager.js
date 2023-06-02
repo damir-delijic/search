@@ -5,7 +5,7 @@ const Trie = require('./trie');
 
 
 const Query = require('./query');
-const DocumentHandler = require('./documentHandler');
+const Retriever = require('./retriever');
 
 
 module.exports = class Manager{
@@ -21,7 +21,7 @@ module.exports = class Manager{
         this.build();
         
         this.query = new Query(this.config.nlp, this.config.synonyms, this.tokenizer, this.trie, this.rindex);
-        this.documentHandler = new DocumentHandler(this.rindex, this.config.data);
+        this.retriever = new Retriever(this.rindex, this.config.data);
     }
 
     build(){
@@ -51,7 +51,7 @@ module.exports = class Manager{
 
     search(query){
         let vector = this.query.handle(query.text);
-        let documents = this.documentHandler.retrieve(vector, query.collections);
+        let documents = this.retriever.retrieve(vector, query.collections);
         documents = documents.length > 10 ? documents.slice(0, 10) : documents;
         let result = this.fetch(documents);
         return result;

@@ -1,6 +1,6 @@
 const DocumentRanker = require('./documentRanker');
 
-module.exports = class DocumentRetriever{
+module.exports = class Retriever{
 
     constructor(rindex, config){
         this.rindex = rindex;
