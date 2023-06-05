@@ -16,7 +16,7 @@ module.exports = class Rindex{
 
     getFrequency(term){
         if(this.contains(term)){
-            return this.dictionary[term].a.length;
+            return this.dictionary[term].length;
         }else{
             return 0;
         }
@@ -24,7 +24,7 @@ module.exports = class Rindex{
 
     getAppearances(term){
         if(this.contains(term)){
-            return this.dictionary[term].a;
+            return this.dictionary[term];
         }else{
             return [];
         }
@@ -40,11 +40,9 @@ module.exports = class Rindex{
         }
 
         if(this.contains(word)){
-            this.dictionary[word].a.push(appearance);
+            this.dictionary[word].push(appearance);
         }else{
-            this.dictionary[word] = {
-                a: [appearance]
-            }
+            this.dictionary[word] = [appearance]
         }
 
     }
@@ -59,15 +57,15 @@ module.exports = class Rindex{
         let word, appearance, i;
         
         for(word in this.dictionary){
-            for(i = 0; i < this.dictionary[word].a.length; i++){
+            for(i = 0; i < this.dictionary[word].length; i++){
 
-                appearance = this.dictionary[word].a[i];
+                appearance = this.dictionary[word][i];
                 if(appearance.s == source && appearance.i == id){
-                    this.dictionary[word].a.splice(i, 1);
+                    this.dictionary[word].splice(i, 1);
                     i -= 1;
                 }
             }
-            if(this.dictionary[word].a.length == 0){
+            if(this.dictionary[word].length == 0){
                 this.deleteWord(word)
             }
         }

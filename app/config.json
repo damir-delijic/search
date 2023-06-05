@@ -2,8 +2,11 @@
     "data":{
         "collections":{
             "movies":{
-                "type": "json",
-                "path": "./data/movies.json",
+                "type": "database",
+                "databaseName": "iris",
+                "tableName": "movies",
+                "serverName": "DAMIRDELIJIC",
+                "port": "localhost",
                 "fields":{
                     "id":{
                         "ignore": "true"

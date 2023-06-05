@@ -9,3 +9,21 @@ kolekcija jedna klasa, u argumentima joj se predaju funkcije za getovanje podata
 
 tezina riejci moze biti nula povecati je samo za 0.1
 napraviti da dokument dobija positional i termoccurence skor, ukombinovati i ih i tako ih sortirati
+
+"movies":{
+                "type": "json",
+                "path": "./data/movies.json",
+                "fields":{
+                    "id":{
+                        "ignore": "true"
+                    },
+                    "title":{
+                        "separators": [],
+                        "weight": 1
+                    },
+                    "actor": {
+                        "separators": [","],
+                        "weight": 1
+                    }
+                }
+            },

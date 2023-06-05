@@ -33,9 +33,52 @@ module.exports = class Collection{
                 }
                 this.data.push(obj);
             }
+
+            this.handleData();
+
+        }else if(this.config.type == 'database'){
+
+            var sql = require("mssql/msnodesqlv8");
+
+
+            let dbConfig = {
+                connectionTimeout : 30000,
+                connectionString: 'Driver={SQL Server Native Client 10.0};Server=' + this.config.serverName + ';Database=' + this.config.databaseName + ';Trusted_Connection=yes;',
+            }
+
+            let that = this;
+            
+            var dbConnect = new sql.connect(dbConfig,
+                function(err)
+                 {
+                   if(err){
+                     console.log("Error while connecting database: " + err)
+                   }else{
+                     console.log("connected to database: " + that.config.serverName)
+                     var request = new sql.Request();
+                   
+                     // query to the database and get the records
+                     request.query('select * from ' + that.config.tableName  , function (err, recordset) { // + ' where id = 9 or id = 1'
+                         
+                        if (err) console.log(err)
+            
+                        let newData = recordset.recordset;
+                        let doc;
+                        while(newData.length > 0){
+                            doc = newData.shift();
+                            that.data.push({
+                                id: doc.ID,
+                                title: doc.title,
+                                actor: doc.actor 
+                            });
+                        }
+                        that.handleData();
+                     });
+                   }
+                 }
+              )
         }
 
-        this.handleData();
     }
 
     insert(document){
@@ -69,17 +112,18 @@ module.exports = class Collection{
 
     handleField(document, field){
         let content = document[field];
-        let word, words, position;
+        if(content){
+            let word, words, position;
+        
+            words = this.processText(content, field);
+            this.setFlens(document.id, field, words.length);
     
-        words = this.processText(content, field);
-        this.setFlens(document.id, field, words.length);
-
-        for(position = 0; position < words.length; position++){
-            word = words[position];
-            this.rindex.insert(word, this.name, document.id, field, position)
-            this.trie.insert(word);
+            for(position = 0; position < words.length; position++){
+                word = words[position];
+                this.rindex.insert(word, this.name, document.id, field, position)
+                this.trie.insert(word);
+            }
         }
-
     }
 
     processText(text, field){
